@@ -10,146 +10,142 @@
 <title>個人資產管理</title>
 <link rel="manifest" href="manifest.json">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  :root {
-    --bg: #ffffff; --bg2: #f5f5f3; --bg3: #ebebea;
-    --text: #1a1a18; --text2: #6b6b68; --text3: #9e9d99;
-    --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
-    --green: #1D9E75; --blue: #185FA5; --red: #D85A30; --amber: #BA7517;
-    --radius: 10px; --radius-lg: 14px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #1c1c1a; --bg2: #272725; --bg3: #333330;
-      --text: #e8e7e2; --text2: #9e9d99; --text3: #6b6b68;
-      --border: rgba(255,255,255,0.1); --border2: rgba(255,255,255,0.2);
-    }
-  }
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-  body { display: flex; flex-direction: column; max-width: 640px; margin: 0 auto; }
-
-  .header { padding: 16px 16px 0; }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
-  .app-title { font-size: 13px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; }
-  .sync-btn { font-size: 12px; color: var(--blue); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
-  .total-label { font-size: 12px; color: var(--text3); margin-bottom: 2px; }
-  .total-value { font-size: 32px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
-  .total-pnl { font-size: 13px; margin-top: 2px; min-height: 18px; }
-  .status-bar { font-size: 11px; color: var(--text3); text-align: center; padding: 4px 0 0; min-height: 16px; }
-
-  .tabs { display: flex; padding: 12px 16px 0; border-bottom: 0.5px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab { flex-shrink: 0; padding: 8px 10px; font-size: 13px; color: var(--text2); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
-  .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
-
-  .content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 40px; }
-
-  .card { background: var(--bg2); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px; }
-  .card-white { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
-  .card-title { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 10px; text-transform: uppercase; }
-
-  .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
-  .metric { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; }
-  .metric-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
-  .metric-value { font-size: 20px; font-weight: 600; color: var(--text); }
-  .metric-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
-  .metrics-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-
-  .asset-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
-  .asset-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .asset-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-  .asset-info { flex: 1; min-width: 0; }
-  .asset-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .asset-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
-  .asset-right { text-align: right; flex-shrink: 0; }
-  .asset-amount { font-size: 14px; font-weight: 500; color: var(--text); }
-  .asset-pnl { font-size: 11px; margin-top: 1px; }
-
-  .alloc-row { margin-bottom: 10px; }
-  .alloc-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-  .bar-bg { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-
-  .form-section { margin-bottom: 14px; }
-  .form-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: block; }
-  .form-input { width: 100%; padding: 10px 12px; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
-  .form-input:focus { border-color: var(--blue); }
-  select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-color: var(--bg); padding-right: 32px; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
-
-  .btn-primary { width: 100%; padding: 12px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; margin-top: 4px; }
-  .btn-primary:active { opacity: 0.8; }
-  .btn-primary:disabled { opacity: 0.5; }
-  .btn-danger { padding: 6px 10px; background: none; border: 0.5px solid var(--red); color: var(--red); border-radius: 6px; font-size: 11px; cursor: pointer; }
-  .btn-edit { padding: 6px 10px; background: none; border: 0.5px solid var(--border2); color: var(--text2); border-radius: 6px; font-size: 11px; cursor: pointer; }
-  .btn-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-  /* type toggle */
-  .type-toggle { display: flex; background: var(--bg2); border-radius: var(--radius); padding: 3px; margin-bottom: 14px; }
-  .type-btn { flex: 1; padding: 8px; font-size: 13px; border: none; background: none; border-radius: 8px; cursor: pointer; color: var(--text2); transition: all 0.15s; }
-  .type-btn.active { background: var(--bg); color: var(--text); font-weight: 500; box-shadow: var(--shadow); }
-  .type-btn.income.active { color: var(--green); }
-  .type-btn.expense.active { color: var(--red); }
-
-  /* month selector */
-  .month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-  .month-label { font-size: 15px; font-weight: 500; color: var(--text); }
-  .month-btn { background: var(--bg2); border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
-
-  /* cashflow rows */
-  .cf-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
-  .cf-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .cf-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
-  .cf-info { flex: 1; min-width: 0; }
-  .cf-desc { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .cf-cat { font-size: 11px; color: var(--text3); margin-top: 1px; }
-  .cf-right { text-align: right; flex-shrink: 0; }
-  .cf-amount { font-size: 14px; font-weight: 500; }
-  .cf-date { font-size: 11px; color: var(--text3); margin-top: 1px; }
-
-  /* mini chart */
-  .chart-wrap { position: relative; width: 100%; height: 120px; }
-  canvas { display: block; }
-
-  /* category pills */
-  .cat-grid { display: flex; flex-wrap: wrap; gap: 6px; }
-  .cat-pill { padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text2); transition: all 0.15s; }
-  .cat-pill.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
-
-  .history-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
-  .history-row:last-child { border-bottom: none; }
-  .history-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-  .history-info { flex: 1; }
-  .history-desc { font-size: 13px; color: var(--text); }
-  .history-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
-  .history-amount { font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
-
-  .fx-display { font-size: 28px; font-weight: 600; color: var(--text); margin: 8px 0 4px; }
-  .fx-rate { font-size: 12px; color: var(--text3); }
-  .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
-  .rate-item { background: var(--bg3); border-radius: 8px; padding: 10px 12px; }
-  .rate-pair { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
-  .rate-val { font-size: 16px; font-weight: 600; color: var(--text); }
-
-  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
-  .toast.show { opacity: 1; }
-
-  .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 32px 0; }
-  .pos { color: var(--green); } .neg { color: var(--red); }
-
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-  .modal-backdrop.open { opacity: 1; pointer-events: all; }
-  .modal { background: var(--bg); border-radius: 20px 20px 0 0; padding: 20px 16px 48px; width: 100%; max-width: 640px; transform: translateY(100%); transition: transform 0.3s ease; }
-  .modal-backdrop.open .modal { transform: translateY(0); }
-  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-  .modal-title { font-size: 16px; font-weight: 600; }
-  .modal-close { background: var(--bg2); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
-
-  .divider { border: none; border-top: 0.5px solid var(--border); margin: 12px 0; }
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .section-title { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;--bg2:#f5f5f3;--bg3:#ebebea;
+  --text:#1a1a18;--text2:#6b6b68;--text3:#9e9d99;
+  --border:rgba(0,0,0,0.1);--border2:rgba(0,0,0,0.2);
+  --green:#1D9E75;--blue:#185FA5;--red:#D85A30;--amber:#BA7517;
+  --radius:10px;--radius-lg:14px;
+  --shadow:0 1px 3px rgba(0,0,0,0.08);
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1c1c1a;--bg2:#272725;--bg3:#333330;--text:#e8e7e2;--text2:#9e9d99;--text3:#6b6b68;--border:rgba(255,255,255,0.1);--border2:rgba(255,255,255,0.2)}
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+body{display:flex;flex-direction:column;max-width:640px;margin:0 auto}
+.header{padding:16px 16px 0}
+.header-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.app-title{font-size:13px;font-weight:500;color:var(--text3);letter-spacing:.04em}
+.sync-btn{font-size:12px;color:var(--blue);background:none;border:none;cursor:pointer;padding:4px 8px;border-radius:6px}
+.total-label{font-size:12px;color:var(--text3);margin-bottom:2px}
+.total-value{font-size:32px;font-weight:600;color:var(--text);letter-spacing:-.5px}
+.total-pnl{font-size:13px;margin-top:2px;min-height:18px}
+.status-bar{font-size:11px;color:var(--text3);text-align:center;padding:4px 0 0;min-height:16px}
+.tabs{display:flex;padding:12px 16px 0;border-bottom:.5px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:8px 10px;font-size:13px;color:var(--text2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tab.active{color:var(--text);border-bottom-color:var(--text);font-weight:500}
+.content{flex:1;overflow-y:auto;padding:16px;padding-bottom:40px}
+.card{background:var(--bg2);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px}
+.card-white{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:12px;box-shadow:var(--shadow)}
+.card-title{font-size:11px;font-weight:500;color:var(--text3);letter-spacing:.06em;margin-bottom:10px;text-transform:uppercase}
+.metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.metrics-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px}
+.metric{background:var(--bg2);border-radius:var(--radius);padding:12px 14px}
+.metric-label{font-size:11px;color:var(--text3);margin-bottom:4px}
+.metric-value{font-size:20px;font-weight:600;color:var(--text)}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.asset-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:.5px solid var(--border)}
+.asset-row:last-child{border-bottom:none;padding-bottom:0}
+.asset-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.asset-info{flex:1;min-width:0}
+.asset-name{font-size:14px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.asset-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.asset-right{text-align:right;flex-shrink:0}
+.asset-amount{font-size:14px;font-weight:500;color:var(--text)}
+.asset-pnl{font-size:11px;margin-top:1px}
+.alloc-row{margin-bottom:10px}
+.alloc-header{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.bar-bg{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .6s ease}
+.form-section{margin-bottom:14px}
+.form-label{font-size:12px;color:var(--text2);margin-bottom:5px;display:block}
+.form-input{width:100%;padding:10px 12px;background:var(--bg);border:.5px solid var(--border2);border-radius:var(--radius);font-size:14px;color:var(--text);outline:none;transition:border-color .15s;-webkit-appearance:none}
+.form-input:focus{border-color:var(--blue)}
+select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;background-color:var(--bg);padding-right:32px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.btn-primary{width:100%;padding:12px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s;margin-top:4px}
+.btn-primary:active{opacity:.8}
+.btn-primary:disabled{opacity:.5}
+.btn-danger{padding:6px 10px;background:none;border:.5px solid var(--red);color:var(--red);border-radius:6px;font-size:11px;cursor:pointer}
+.btn-edit{padding:6px 10px;background:none;border:.5px solid var(--border2);color:var(--text2);border-radius:6px;font-size:11px;cursor:pointer}
+.btn-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-outline{padding:8px 16px;background:none;border:.5px solid var(--border2);color:var(--text);border-radius:var(--radius);font-size:13px;cursor:pointer}
+.btn-outline:active{background:var(--bg2)}
+/* section header */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.section-title{font-size:11px;font-weight:500;color:var(--text3);letter-spacing:.06em;text-transform:uppercase}
+/* type toggle */
+.type-toggle{display:flex;background:var(--bg2);border-radius:var(--radius);padding:3px;margin-bottom:14px}
+.type-btn{flex:1;padding:8px;font-size:13px;border:none;background:none;border-radius:8px;cursor:pointer;color:var(--text2);transition:all .15s}
+.type-btn.active{background:var(--bg);color:var(--text);font-weight:500;box-shadow:var(--shadow)}
+.type-btn.income.active{color:var(--green)}
+.type-btn.expense.active{color:var(--red)}
+/* month nav */
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.month-label{font-size:15px;font-weight:500;color:var(--text)}
+.month-btn{background:var(--bg2);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;color:var(--text2);display:flex;align-items:center;justify-content:center}
+/* cashflow rows */
+.cf-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:.5px solid var(--border)}
+.cf-row:last-child{border-bottom:none;padding-bottom:0}
+.cf-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.cf-info{flex:1;min-width:0}
+.cf-desc{font-size:14px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cf-cat{font-size:11px;color:var(--text3);margin-top:1px}
+.cf-right{text-align:right;flex-shrink:0}
+.cf-amount{font-size:14px;font-weight:500}
+.cf-date{font-size:11px;color:var(--text3);margin-top:1px}
+/* goal cards */
+.goal-card{background:var(--bg);border:.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow)}
+.goal-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.goal-title{font-size:14px;font-weight:500;color:var(--text)}
+.goal-sub{font-size:11px;color:var(--text3);margin-top:2px}
+.goal-badge{font-size:11px;padding:3px 8px;border-radius:10px;font-weight:500;white-space:nowrap;flex-shrink:0}
+.badge-green{background:#1D9E7520;color:#0F6E56}
+.badge-amber{background:#BA751720;color:#633806}
+.badge-red{background:#D85A3020;color:#712B13}
+.goal-progress{margin-bottom:6px}
+.goal-bar-bg{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-bottom:6px}
+.goal-bar-fill{height:100%;border-radius:4px;transition:width .8s ease}
+.goal-nums{display:flex;justify-content:space-between;font-size:11px;color:var(--text3)}
+/* cat pills */
+.cat-grid{display:flex;flex-wrap:wrap;gap:6px}
+.cat-pill{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:.5px solid var(--border2);background:var(--bg2);color:var(--text2);transition:all .15s}
+.cat-pill.selected{background:var(--text);color:var(--bg);border-color:var(--text)}
+/* chart */
+.chart-wrap{position:relative;width:100%;height:120px}
+/* history */
+.history-row{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:.5px solid var(--border)}
+.history-row:last-child{border-bottom:none}
+.history-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.history-info{flex:1}
+.history-desc{font-size:13px;color:var(--text)}
+.history-date{font-size:11px;color:var(--text3);margin-top:2px}
+.history-amount{font-size:13px;font-weight:500;text-align:right;flex-shrink:0}
+/* fx */
+.fx-display{font-size:28px;font-weight:600;color:var(--text);margin:8px 0 4px}
+.fx-rate{font-size:12px;color:var(--text3)}
+.rate-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.rate-item{background:var(--bg3);border-radius:8px;padding:10px 12px}
+.rate-pair{font-size:11px;color:var(--text3);margin-bottom:2px}
+.rate-val{font-size:16px;font-weight:600;color:var(--text)}
+/* toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1}
+.empty{text-align:center;color:var(--text3);font-size:13px;padding:32px 0}
+.pos{color:var(--green)}.neg{color:var(--red)}
+/* modal */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-backdrop.open{opacity:1;pointer-events:all}
+.modal{background:var(--bg);border-radius:20px 20px 0 0;padding:20px 16px 48px;width:100%;max-width:640px;transform:translateY(100%);transition:transform .3s ease;max-height:90vh;overflow-y:auto}
+.modal-backdrop.open .modal{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-size:16px;font-weight:600}
+.modal-close{background:var(--bg2);border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;color:var(--text2);display:flex;align-items:center;justify-content:center}
+/* add asset btn in assets tab */
+.add-asset-bar{display:flex;justify-content:flex-end;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -169,7 +165,6 @@
   <button class="tab active" onclick="switchTab('overview',this)">總覽</button>
   <button class="tab" onclick="switchTab('assets',this)">資產</button>
   <button class="tab" onclick="switchTab('cashflow',this)">現金流</button>
-  <button class="tab" onclick="switchTab('add',this)">新增</button>
   <button class="tab" onclick="switchTab('history',this)">紀錄</button>
   <button class="tab" onclick="switchTab('fx',this)">換算</button>
 </div>
@@ -179,29 +174,18 @@
   <!-- 總覽 -->
   <div id="tab-overview">
     <div class="metrics">
-      <div class="metric">
-        <div class="metric-label">資產數量</div>
-        <div class="metric-value" id="m-count">—</div>
-        <div class="metric-sub">筆</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">總損益</div>
-        <div class="metric-value" id="m-pnl">—</div>
-        <div class="metric-sub" id="m-pnl-pct"></div>
-      </div>
+      <div class="metric"><div class="metric-label">資產數量</div><div class="metric-value" id="m-count">—</div><div class="metric-sub">筆</div></div>
+      <div class="metric"><div class="metric-label">總損益</div><div class="metric-value" id="m-pnl">—</div><div class="metric-sub" id="m-pnl-pct"></div></div>
     </div>
-    <div class="card">
-      <div class="card-title">資產配置</div>
-      <div id="alloc-bars"></div>
-    </div>
-    <div class="card">
-      <div class="card-title">損益排行</div>
-      <div id="pnl-list"></div>
-    </div>
+    <div class="card"><div class="card-title">資產配置</div><div id="alloc-bars"></div></div>
+    <div class="card"><div class="card-title">損益排行</div><div id="pnl-list"></div></div>
   </div>
 
   <!-- 資產 -->
   <div id="tab-assets" style="display:none">
+    <div class="add-asset-bar">
+      <button class="btn-outline" onclick="openAssetModal()">＋ 新增資產</button>
+    </div>
     <div id="asset-list"></div>
   </div>
 
@@ -212,36 +196,27 @@
       <span class="month-label" id="month-label"></span>
       <button class="month-btn" onclick="changeMonth(1)">›</button>
     </div>
-
     <div class="metrics-3">
-      <div class="metric">
-        <div class="metric-label">收入</div>
-        <div class="metric-value pos" id="cf-income">—</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">支出</div>
-        <div class="metric-value neg" id="cf-expense">—</div>
-      </div>
-      <div class="metric">
-        <div class="metric-label">結餘</div>
-        <div class="metric-value" id="cf-balance">—</div>
-      </div>
+      <div class="metric"><div class="metric-label">收入</div><div class="metric-value pos" id="cf-income">—</div></div>
+      <div class="metric"><div class="metric-label">支出</div><div class="metric-value neg" id="cf-expense">—</div></div>
+      <div class="metric"><div class="metric-label">結餘</div><div class="metric-value" id="cf-balance">—</div></div>
     </div>
-
+    <!-- 目標 -->
     <div class="card">
       <div class="section-header">
-        <div class="card-title" style="margin:0">結餘走勢（近6個月）</div>
+        <div class="card-title" style="margin:0">目標追蹤</div>
+        <button class="btn-edit" onclick="openGoalModal()">設定目標</button>
       </div>
-      <div class="chart-wrap">
-        <canvas id="balance-chart"></canvas>
-      </div>
+      <div id="goals-area"></div>
     </div>
-
+    <!-- 走勢圖 -->
     <div class="card">
-      <div class="card-title">支出分類</div>
-      <div id="expense-cats"></div>
+      <div class="card-title">結餘走勢（近6個月）</div>
+      <div class="chart-wrap"><canvas id="balance-chart"></canvas></div>
     </div>
-
+    <!-- 支出分類 -->
+    <div class="card"><div class="card-title">支出分類</div><div id="expense-cats"></div></div>
+    <!-- 明細 -->
     <div class="card">
       <div class="section-header">
         <div class="card-title" style="margin:0">本月明細</div>
@@ -251,52 +226,7 @@
     </div>
   </div>
 
-  <!-- 新增資產 -->
-  <div id="tab-add" style="display:none">
-    <div class="card-white">
-      <div class="form-section">
-        <label class="form-label">資產名稱</label>
-        <input class="form-input" id="a-name" placeholder="例：台積電 2330">
-      </div>
-      <div class="form-row form-section">
-        <div>
-          <label class="form-label">類型</label>
-          <select class="form-input" id="a-type">
-            <option value="cash">現金／存款</option>
-            <option value="stock">股票／ETF</option>
-            <option value="crypto">加密貨幣</option>
-            <option value="realestate">房地產</option>
-            <option value="other">其他投資</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">幣別</label>
-          <select class="form-input" id="a-currency">
-            <option value="TWD">TWD 台幣</option>
-            <option value="USD">USD 美金</option>
-            <option value="CAD">CAD 加幣</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-row form-section">
-        <div>
-          <label class="form-label">買入成本</label>
-          <input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal">
-        </div>
-        <div>
-          <label class="form-label">目前現值</label>
-          <input class="form-input" id="a-value" type="number" placeholder="0" inputmode="decimal">
-        </div>
-      </div>
-      <div class="form-section">
-        <label class="form-label">備註（選填）</label>
-        <input class="form-input" id="a-note" placeholder="例：第一銀行定存">
-      </div>
-      <button class="btn-primary" id="add-btn" onclick="addAsset()">新增資產</button>
-    </div>
-  </div>
-
-  <!-- 歷史紀錄 -->
+  <!-- 紀錄 -->
   <div id="tab-history" style="display:none">
     <div class="card"><div id="history-list"></div></div>
   </div>
@@ -306,22 +236,9 @@
     <div class="card-white">
       <div class="card-title">幣別換算</div>
       <div class="form-row-3" style="margin-bottom:12px">
-        <div>
-          <label class="form-label">金額</label>
-          <input class="form-input" id="fx-amount" type="number" value="1000" oninput="calcFX()" inputmode="decimal">
-        </div>
-        <div>
-          <label class="form-label">從</label>
-          <select class="form-input" id="fx-from" onchange="calcFX()">
-            <option>TWD</option><option>USD</option><option>CAD</option>
-          </select>
-        </div>
-        <div>
-          <label class="form-label">換成</label>
-          <select class="form-input" id="fx-to" onchange="calcFX()">
-            <option>USD</option><option>TWD</option><option>CAD</option>
-          </select>
-        </div>
+        <div><label class="form-label">金額</label><input class="form-input" id="fx-amount" type="number" value="1000" oninput="calcFX()" inputmode="decimal"></div>
+        <div><label class="form-label">從</label><select class="form-input" id="fx-from" onchange="calcFX()"><option>TWD</option><option>USD</option><option>CAD</option></select></div>
+        <div><label class="form-label">換成</label><select class="form-input" id="fx-to" onchange="calcFX()"><option>USD</option><option>TWD</option><option>CAD</option></select></div>
       </div>
       <div class="fx-display" id="fx-result">—</div>
       <div class="fx-rate" id="fx-rate-note"></div>
@@ -338,35 +255,36 @@
     </div>
   </div>
 
-</div><!-- end content -->
+</div>
 
-<!-- 編輯資產 Modal -->
-<div class="modal-backdrop" id="modal" onclick="closeModal(event)">
+<!-- 新增/編輯資產 Modal -->
+<div class="modal-backdrop" id="asset-modal" onclick="closeAssetModal(event)">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title">編輯資產</div>
-      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-title" id="asset-modal-title">新增資產</div>
+      <button class="modal-close" onclick="closeAssetModal()">✕</button>
     </div>
     <input type="hidden" id="edit-id">
-    <div class="form-section">
-      <label class="form-label">資產名稱</label>
-      <input class="form-input" id="edit-name">
+    <div class="form-section"><label class="form-label">資產名稱</label><input class="form-input" id="a-name" placeholder="例：台積電 2330"></div>
+    <div class="form-row form-section">
+      <div><label class="form-label">類型</label>
+        <select class="form-input" id="a-type">
+          <option value="cash">現金／存款</option><option value="stock">股票／ETF</option>
+          <option value="crypto">加密貨幣</option><option value="realestate">房地產</option><option value="other">其他投資</option>
+        </select>
+      </div>
+      <div><label class="form-label">幣別</label>
+        <select class="form-input" id="a-currency">
+          <option value="TWD">TWD 台幣</option><option value="USD">USD 美金</option><option value="CAD">CAD 加幣</option>
+        </select>
+      </div>
     </div>
     <div class="form-row form-section">
-      <div>
-        <label class="form-label">買入成本</label>
-        <input class="form-input" id="edit-cost" type="number" inputmode="decimal">
-      </div>
-      <div>
-        <label class="form-label">目前現值</label>
-        <input class="form-input" id="edit-value" type="number" inputmode="decimal">
-      </div>
+      <div><label class="form-label">買入成本</label><input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal"></div>
+      <div><label class="form-label">目前現值</label><input class="form-input" id="a-value" type="number" placeholder="0" inputmode="decimal"></div>
     </div>
-    <div class="form-section">
-      <label class="form-label">備註</label>
-      <input class="form-input" id="edit-note">
-    </div>
-    <button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">儲存</button>
+    <div class="form-section"><label class="form-label">備註（選填）</label><input class="form-input" id="a-note" placeholder="例：第一銀行定存"></div>
+    <button class="btn-primary" id="asset-save-btn" onclick="saveAsset()">新增資產</button>
   </div>
 </div>
 
@@ -374,30 +292,68 @@
 <div class="modal-backdrop" id="cf-modal" onclick="closeCFModal(event)">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="cf-modal-title">新增收支</div>
+      <div class="modal-title">新增收支</div>
       <button class="modal-close" onclick="closeCFModal()">✕</button>
     </div>
     <div class="type-toggle">
       <button class="type-btn income active" id="cf-type-income" onclick="setCFType('income')">收入</button>
       <button class="type-btn expense" id="cf-type-expense" onclick="setCFType('expense')">支出</button>
     </div>
-    <div class="form-section">
-      <label class="form-label">金額（TWD）</label>
-      <input class="form-input" id="cf-amount" type="number" placeholder="0" inputmode="decimal">
-    </div>
-    <div class="form-section">
-      <label class="form-label">描述</label>
-      <input class="form-input" id="cf-desc" placeholder="例：三月薪資">
-    </div>
-    <div class="form-section">
-      <label class="form-label">分類</label>
-      <div class="cat-grid" id="cat-pills"></div>
-    </div>
-    <div class="form-section">
-      <label class="form-label">日期</label>
-      <input class="form-input" id="cf-date" type="date">
-    </div>
+    <div class="form-section"><label class="form-label">金額（TWD）</label><input class="form-input" id="cf-amount" type="number" placeholder="0" inputmode="decimal"></div>
+    <div class="form-section"><label class="form-label">描述</label><input class="form-input" id="cf-desc" placeholder="例：三月薪資"></div>
+    <div class="form-section"><label class="form-label">分類</label><div class="cat-grid" id="cat-pills"></div></div>
+    <div class="form-section"><label class="form-label">日期</label><input class="form-input" id="cf-date" type="date"></div>
     <button class="btn-primary" id="cf-save-btn" onclick="saveCF()">新增</button>
+  </div>
+</div>
+
+<!-- 目標設定 Modal -->
+<div class="modal-backdrop" id="goal-modal" onclick="closeGoalModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">設定目標</div>
+      <button class="modal-close" onclick="closeGoalModal()">✕</button>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">每月結餘目標</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">例：每月存到 NT$20,000</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="goal-balance-on" onchange="toggleGoalField('balance')">
+          <span style="font-size:12px;color:var(--text2)">啟用</span>
+        </label>
+      </div>
+      <input class="form-input" id="goal-balance-val" type="number" placeholder="20000" inputmode="decimal" disabled>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">存款包山目標</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">例：存到總資產 NT$500,000</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="goal-savings-on" onchange="toggleGoalField('savings')">
+          <span style="font-size:12px;color:var(--text2)">啟用</span>
+        </label>
+      </div>
+      <input class="form-input" id="goal-savings-val" type="number" placeholder="500000" inputmode="decimal" disabled>
+    </div>
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div>
+          <div style="font-size:13px;font-weight:500;color:var(--text)">每月支出上限</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px">例：每月支出不超過 NT$30,000</div>
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;cursor:pointer">
+          <input type="checkbox" id="goal-expense-on" onchange="toggleGoalField('expense')">
+          <span style="font-size:12px;color:var(--text2)">啟用</span>
+        </label>
+      </div>
+      <input class="form-input" id="goal-expense-val" type="number" placeholder="30000" inputmode="decimal" disabled>
+    </div>
+    <button class="btn-primary" onclick="saveGoals()">儲存目標</button>
   </div>
 </div>
 
@@ -405,451 +361,384 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-const API = 'https://script.google.com/macros/s/AKfycbyi8AFT9U29DA9os2uTl6iTyDI8T5b6YBXubXV7XfLi9ujR0vThYMBg5QA3FrIAJy9WoA/exec';
-const RATES = { TWD:{TWD:1,USD:1/32.5,CAD:1/23.8}, USD:{TWD:32.5,USD:1,CAD:1.37}, CAD:{TWD:23.8,USD:0.73,CAD:1} };
-const ASSET_COLORS = { cash:'#1D9E75', stock:'#185FA5', crypto:'#BA7517', realestate:'#993556', other:'#5F5E5A' };
-const ASSET_ICONS  = { cash:'💰', stock:'📈', crypto:'🪙', realestate:'🏠', other:'📊' };
-const ASSET_LABELS = { cash:'現金／存款', stock:'股票／ETF', crypto:'加密貨幣', realestate:'房地產', other:'其他投資' };
+const API='https://script.google.com/macros/s/AKfycbyi8AFT9U29DA9os2uTl6iTyDI8T5b6YBXubXV7XfLi9ujR0vThYMBg5QA3FrIAJy9WoA/exec';
+const RATES={TWD:{TWD:1,USD:1/32.5,CAD:1/23.8},USD:{TWD:32.5,USD:1,CAD:1.37},CAD:{TWD:23.8,USD:0.73,CAD:1}};
+const ACOLORS={cash:'#1D9E75',stock:'#185FA5',crypto:'#BA7517',realestate:'#993556',other:'#5F5E5A'};
+const AICONS={cash:'💰',stock:'📈',crypto:'🪙',realestate:'🏠',other:'📊'};
+const ALABELS={cash:'現金／存款',stock:'股票／ETF',crypto:'加密貨幣',realestate:'房地產',other:'其他投資'};
+const INCOME_CATS=['薪資','獎金','投資收益','租金收入','副業','其他收入'];
+const EXPENSE_CATS=['餐飲','交通','購物','娛樂','醫療','住宿','學費','保險','訂閱','其他支出'];
+const CICONS={'薪資':'💼','獎金':'🎁','投資收益':'📈','租金收入':'🏠','副業':'💡','其他收入':'➕','餐飲':'🍜','交通':'🚇','購物':'🛍','娛樂':'🎮','醫療':'💊','住宿':'🏡','學費':'📚','保險':'🛡','訂閱':'📱','其他支出':'📌'};
 
-const INCOME_CATS  = ['薪資', '獎金', '投資收益', '租金收入', '副業', '其他收入'];
-const EXPENSE_CATS = ['餐飲', '交通', '購物', '娛樂', '醫療', '住宿', '學費', '保險', '訂閱', '其他支出'];
-const CAT_ICONS = { '薪資':'💼','獎金':'🎁','投資收益':'📈','租金收入':'🏠','副業':'💡','其他收入':'➕','餐飲':'🍜','交通':'🚇','購物':'🛍','娛樂':'🎮','醫療':'💊','住宿':'🏡','學費':'📚','保險':'🛡','訂閱':'📱','其他支出':'📌' };
+let assets=[],history=[],cashflows=[],nextId=1,nextCFId=1,cbCounter=0;
+let currentMonth=new Date(); currentMonth.setDate(1);
+let selectedCFType='income',selectedCat='';
+let balanceChart=null;
+let assetEditId=null;
 
-let assets = [], history = [], cashflows = [], nextId = 1, nextCFId = 1, cbCounter = 0;
-let currentMonth = new Date(); currentMonth.setDate(1);
-let selectedCFType = 'income';
-let selectedCat = '';
-let balanceChart = null;
+// Goals stored in localStorage (no need for Sheets sync, personal preference)
+let goals=JSON.parse(localStorage.getItem('cf_goals')||'{}');
+// goals = { balance:{on,val}, savings:{on,val}, expense:{on,val} }
 
-function jsonp(params) {
-  return new Promise((resolve, reject) => {
-    const cbName = '__cb' + (cbCounter++);
-    const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('timeout')); }, 20000);
-    window[cbName] = (data) => {
-      clearTimeout(timeout);
-      delete window[cbName];
-      document.getElementById('_jsonp_' + cbName)?.remove();
-      resolve(data);
-    };
-    const url = new URL(API);
-    url.searchParams.set('callback', cbName);
-    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-    const s = document.createElement('script');
-    s.id = '_jsonp_' + cbName;
-    s.src = url.toString();
-    s.onerror = () => { clearTimeout(timeout); delete window[cbName]; s.remove(); reject(new Error('network error')); };
+function jsonp(params){
+  return new Promise((resolve,reject)=>{
+    const cb='__cb'+(cbCounter++);
+    const t=setTimeout(()=>{delete window[cb];reject(new Error('timeout'))},20000);
+    window[cb]=(data)=>{clearTimeout(t);delete window[cb];document.getElementById('_jp_'+cb)?.remove();resolve(data)};
+    const url=new URL(API);
+    url.searchParams.set('callback',cb);
+    Object.entries(params).forEach(([k,v])=>url.searchParams.set(k,v));
+    const s=document.createElement('script');
+    s.id='_jp_'+cb; s.src=url.toString();
+    s.onerror=()=>{clearTimeout(t);delete window[cb];s.remove();reject(new Error('error'))};
     document.head.appendChild(s);
   });
 }
 
-function toTWD(amount, currency) { return amount * RATES[currency].TWD; }
-
-function fmt(n, currency='TWD') {
-  const abs = Math.abs(n), sign = n < 0 ? '-' : '';
-  if (currency==='TWD') return sign+'NT$'+Math.round(abs).toLocaleString();
-  if (currency==='USD') return sign+'US$'+abs.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
-  if (currency==='CAD') return sign+'CA$'+abs.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
+function toTWD(n,c){return n*RATES[c].TWD}
+function fmt(n,c='TWD'){
+  const a=Math.abs(n),sg=n<0?'-':'';
+  if(c==='TWD') return sg+'NT$'+Math.round(a).toLocaleString();
+  if(c==='USD') return sg+'US$'+a.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
+  if(c==='CAD') return sg+'CA$'+a.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
   return n.toLocaleString();
 }
-function fmtShort(n) {
-  const abs = Math.abs(n), sign = n < 0 ? '-' : '';
-  if (abs >= 10000) return sign + Math.round(abs/1000) + 'k';
-  return sign + Math.round(abs).toLocaleString();
-}
+function fmtShort(n){const a=Math.abs(n),sg=n<0?'-':'';return sg+(a>=10000?Math.round(a/1000)+'k':Math.round(a).toLocaleString())}
+function setStatus(m){document.getElementById('status-bar').textContent=m}
+function toast(m,d=2200){const el=document.getElementById('toast');el.textContent=m;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),d)}
 
-function setStatus(msg) { document.getElementById('status-bar').textContent = msg; }
-function toast(msg, dur=2200) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), dur);
-}
-
-async function loadData() {
-  document.getElementById('sync-btn').textContent = '同步中...';
-  try {
-    const data = await jsonp({ action: 'getAll' });
-    if (data.error) throw new Error(data.error);
-    assets = (data.assets||[]).map(a => ({...a, id:Number(a.id), cost:Number(a.cost), value:Number(a.value)}));
-    history = data.history || [];
-    cashflows = (data.cashflows||[]).map(c => ({...c, id:Number(c.id), amount:Number(c.amount)}));
-    nextId = assets.length ? Math.max(...assets.map(a=>a.id))+1 : 1;
-    nextCFId = cashflows.length ? Math.max(...cashflows.map(c=>c.id))+1 : 1;
+async function loadData(){
+  document.getElementById('sync-btn').textContent='同步中...';
+  try{
+    const data=await jsonp({action:'getAll'});
+    if(data.error) throw new Error(data.error);
+    assets=(data.assets||[]).map(a=>({...a,id:Number(a.id),cost:Number(a.cost),value:Number(a.value)}));
+    history=data.history||[];
+    cashflows=(data.cashflows||[]).map(c=>({...c,id:Number(c.id),amount:Number(c.amount)}));
+    nextId=assets.length?Math.max(...assets.map(a=>a.id))+1:1;
+    nextCFId=cashflows.length?Math.max(...cashflows.map(c=>c.id))+1:1;
     renderAll();
-    const now = new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    const now=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
     setStatus('上次同步：'+now);
     toast('已同步');
-  } catch(e) { toast('同步失敗，請檢查網路'); setStatus('同步失敗'); }
-  document.getElementById('sync-btn').textContent = '↻ 同步';
+  }catch(e){toast('同步失敗，請檢查網路');setStatus('同步失敗')}
+  document.getElementById('sync-btn').textContent='↻ 同步';
 }
 
-async function apiSave(action, data) {
-  const result = await jsonp({ action, data: encodeURIComponent(JSON.stringify(data)) });
-  if (result.error) throw new Error(result.error);
-  return result;
+async function apiSave(action,data){
+  const r=await jsonp({action,data:encodeURIComponent(JSON.stringify(data))});
+  if(r.error) throw new Error(r.error);
+  return r;
 }
 
-function renderAll() {
-  renderOverview();
-  renderAssets();
-  renderCashflow();
-  renderHistory();
+function renderAll(){renderOverview();renderAssets();renderCashflow();renderHistory()}
+
+function renderOverview(){
+  const tot=assets.reduce((s,a)=>s+toTWD(a.value,a.currency),0);
+  const cost=assets.reduce((s,a)=>s+toTWD(a.cost,a.currency),0);
+  const pnl=tot-cost,pct=cost>0?((pnl/cost)*100).toFixed(1):'0.0';
+  const sg=pnl>=0?'+':'',cl=pnl>=0?'pos':'neg';
+  document.getElementById('total-value').textContent=fmt(tot);
+  document.getElementById('total-pnl').innerHTML=`<span class="${cl}">${sg}${fmt(pnl)} (${sg}${pct}%)</span>`;
+  document.getElementById('m-count').textContent=assets.length;
+  document.getElementById('m-pnl').innerHTML=`<span class="${cl}">${sg}${fmt(pnl)}</span>`;
+  document.getElementById('m-pnl-pct').innerHTML=`<span class="${cl}">${sg}${pct}%</span>`;
+  const byType={};
+  assets.forEach(a=>{byType[a.type]=(byType[a.type]||0)+toTWD(a.value,a.currency)});
+  document.getElementById('alloc-bars').innerHTML=Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v])=>{
+    const p=tot>0?(v/tot*100).toFixed(1):0;
+    return `<div class="alloc-row"><div class="alloc-header"><span style="color:var(--text2);font-size:12px">${ALABELS[t]}</span><span style="color:var(--text3);font-size:12px">${p}%</span></div><div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${ACOLORS[t]}"></div></div></div>`;
+  }).join('')||'<div class="empty">尚無資產</div>';
+  document.getElementById('pnl-list').innerHTML=assets.map(a=>({name:a.name,pnl:toTWD(a.value-a.cost,a.currency),pct:a.cost>0?((a.value-a.cost)/a.cost*100).toFixed(1):'0.0'})).sort((a,b)=>b.pnl-a.pnl).slice(0,5).map(a=>{
+    const s=a.pnl>=0?'+':'',c=a.pnl>=0?'pos':'neg';
+    return `<div class="asset-row"><div class="asset-info"><div class="asset-name">${a.name}</div></div><div class="asset-right"><div class="asset-amount ${c}">${s}${fmt(a.pnl)}</div><div class="asset-pnl ${c}">${s}${a.pct}%</div></div></div>`;
+  }).join('')||'<div class="empty">尚無資產</div>';
 }
 
-function renderOverview() {
-  const totalTWD = assets.reduce((s,a) => s+toTWD(a.value,a.currency), 0);
-  const totalCost = assets.reduce((s,a) => s+toTWD(a.cost,a.currency), 0);
-  const pnl = totalTWD - totalCost;
-  const pct = totalCost>0 ? ((pnl/totalCost)*100).toFixed(1) : '0.0';
-  const sign = pnl>=0?'+':''; const cls = pnl>=0?'pos':'neg';
-  document.getElementById('total-value').textContent = fmt(totalTWD);
-  document.getElementById('total-pnl').innerHTML = `<span class="${cls}">${sign}${fmt(pnl)} (${sign}${pct}%)</span>`;
-  document.getElementById('m-count').textContent = assets.length;
-  document.getElementById('m-pnl').innerHTML = `<span class="${cls}">${sign}${fmt(pnl)}</span>`;
-  document.getElementById('m-pnl-pct').innerHTML = `<span class="${cls}">${sign}${pct}%</span>`;
-
-  const byType = {};
-  assets.forEach(a => { byType[a.type] = (byType[a.type]||0)+toTWD(a.value,a.currency); });
-  document.getElementById('alloc-bars').innerHTML = Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v]) => {
-    const p = totalTWD>0 ? (v/totalTWD*100).toFixed(1) : 0;
-    return `<div class="alloc-row">
-      <div class="alloc-header"><span style="color:var(--text2);font-size:12px">${ASSET_LABELS[t]}</span><span style="color:var(--text3);font-size:12px">${p}%</span></div>
-      <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${ASSET_COLORS[t]}"></div></div>
-    </div>`;
-  }).join('') || '<div class="empty">尚無資產</div>';
-
-  document.getElementById('pnl-list').innerHTML = assets.map(a => ({
-    name:a.name, pnl:toTWD(a.value-a.cost,a.currency),
-    pct:a.cost>0?((a.value-a.cost)/a.cost*100).toFixed(1):'0.0'
-  })).sort((a,b)=>b.pnl-a.pnl).slice(0,5).map(a => {
-    const s=a.pnl>=0?'+':''; const c=a.pnl>=0?'pos':'neg';
-    return `<div class="asset-row">
-      <div class="asset-info"><div class="asset-name">${a.name}</div></div>
-      <div class="asset-right"><div class="asset-amount ${c}">${s}${fmt(a.pnl)}</div><div class="asset-pnl ${c}">${s}${a.pct}%</div></div>
-    </div>`;
-  }).join('') || '<div class="empty">尚無資產</div>';
+function renderAssets(){
+  document.getElementById('asset-list').innerHTML=assets.map(a=>{
+    const pnl=a.value-a.cost,pct=a.cost>0?((pnl/a.cost)*100).toFixed(1):'0.0';
+    const s=pnl>=0?'+':'',c=pnl>=0?'pos':'neg';
+    return `<div class="card-white"><div class="asset-row" style="padding:0;border:none">
+      <div class="asset-icon" style="background:${ACOLORS[a.type]}22">${AICONS[a.type]}</div>
+      <div class="asset-info"><div class="asset-name">${a.name}</div><div class="asset-sub">${ALABELS[a.type]} · ${a.currency}${a.note?' · '+a.note:''}</div></div>
+      <div class="asset-right" style="margin-right:8px"><div class="asset-amount">${fmt(a.value,a.currency)}</div><div class="asset-pnl ${c}">${s}${fmt(pnl,a.currency)} (${s}${pct}%)</div></div>
+      <div class="btn-actions"><button class="btn-edit" onclick="openAssetModal(${a.id})">編輯</button><button class="btn-danger" onclick="removeAsset(${a.id})">刪除</button></div>
+    </div></div>`;
+  }).join('')||'<div class="empty">尚未新增任何資產<br><small style="color:var(--text3)">點右上「＋ 新增資產」開始</small></div>';
 }
 
-function renderAssets() {
-  document.getElementById('asset-list').innerHTML = assets.map(a => {
-    const pnl = a.value-a.cost, pct = a.cost>0?((pnl/a.cost)*100).toFixed(1):'0.0';
-    const s=pnl>=0?'+':''; const c=pnl>=0?'pos':'neg';
-    return `<div class="card-white">
-      <div class="asset-row" style="padding:0;border:none">
-        <div class="asset-icon" style="background:${ASSET_COLORS[a.type]}22">${ASSET_ICONS[a.type]}</div>
-        <div class="asset-info">
-          <div class="asset-name">${a.name}</div>
-          <div class="asset-sub">${ASSET_LABELS[a.type]} · ${a.currency}${a.note?' · '+a.note:''}</div>
-        </div>
-        <div class="asset-right" style="margin-right:8px">
-          <div class="asset-amount">${fmt(a.value,a.currency)}</div>
-          <div class="asset-pnl ${c}">${s}${fmt(pnl,a.currency)} (${s}${pct}%)</div>
-        </div>
-        <div class="btn-actions">
-          <button class="btn-edit" onclick="openEdit(${a.id})">編輯</button>
-          <button class="btn-danger" onclick="removeAsset(${a.id})">刪除</button>
-        </div>
-      </div>
-    </div>`;
-  }).join('') || '<div class="empty">尚未新增任何資產</div>';
-}
+function getMonthKey(d){return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
 
-function getMonthKey(date) {
-  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0');
-}
-
-function renderCashflow() {
-  const key = getMonthKey(currentMonth);
-  document.getElementById('month-label').textContent =
-    currentMonth.getFullYear()+'年'+(currentMonth.getMonth()+1)+'月';
-
-  const monthCFs = cashflows.filter(c => c.month === key);
-  const income  = monthCFs.filter(c=>c.type==='income').reduce((s,c)=>s+c.amount,0);
-  const expense = monthCFs.filter(c=>c.type==='expense').reduce((s,c)=>s+c.amount,0);
-  const balance = income - expense;
-  const balCls  = balance>=0?'pos':'neg';
-
-  document.getElementById('cf-income').textContent  = fmt(income);
-  document.getElementById('cf-expense').textContent = fmt(expense);
-  document.getElementById('cf-balance').innerHTML   = `<span class="${balCls}">${fmt(balance)}</span>`;
-
-  // Expense categories
-  const expCats = {};
-  monthCFs.filter(c=>c.type==='expense').forEach(c => { expCats[c.cat]=(expCats[c.cat]||0)+c.amount; });
-  const sortedCats = Object.entries(expCats).sort((a,b)=>b[1]-a[1]);
-  const totalExp = expense || 1;
-  document.getElementById('expense-cats').innerHTML = sortedCats.map(([cat,amt]) => {
-    const p = (amt/totalExp*100).toFixed(0);
-    return `<div class="alloc-row">
-      <div class="alloc-header">
-        <span style="color:var(--text2);font-size:12px">${CAT_ICONS[cat]||'📌'} ${cat}</span>
-        <span style="color:var(--text3);font-size:12px">${fmt(amt)} (${p}%)</span>
-      </div>
-      <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:var(--red)"></div></div>
-    </div>`;
-  }).join('') || '<div class="empty">本月尚無支出</div>';
-
-  // Monthly list
-  const sorted = [...monthCFs].sort((a,b)=>b.date.localeCompare(a.date));
-  document.getElementById('cf-list').innerHTML = sorted.map(c => {
-    const isInc = c.type==='income';
+function renderCashflow(){
+  const key=getMonthKey(currentMonth);
+  document.getElementById('month-label').textContent=currentMonth.getFullYear()+'年'+(currentMonth.getMonth()+1)+'月';
+  const mCFs=cashflows.filter(c=>c.month===key);
+  const income=mCFs.filter(c=>c.type==='income').reduce((s,c)=>s+c.amount,0);
+  const expense=mCFs.filter(c=>c.type==='expense').reduce((s,c)=>s+c.amount,0);
+  const balance=income-expense,bcl=balance>=0?'pos':'neg';
+  document.getElementById('cf-income').textContent=fmt(income);
+  document.getElementById('cf-expense').textContent=fmt(expense);
+  document.getElementById('cf-balance').innerHTML=`<span class="${bcl}">${fmt(balance)}</span>`;
+  renderGoals(income,expense,balance);
+  // expense cats
+  const ec={};
+  mCFs.filter(c=>c.type==='expense').forEach(c=>{ec[c.cat]=(ec[c.cat]||0)+c.amount});
+  const te=expense||1;
+  document.getElementById('expense-cats').innerHTML=Object.entries(ec).sort((a,b)=>b[1]-a[1]).map(([cat,amt])=>{
+    const p=(amt/te*100).toFixed(0);
+    return `<div class="alloc-row"><div class="alloc-header"><span style="color:var(--text2);font-size:12px">${CICONS[cat]||'📌'} ${cat}</span><span style="color:var(--text3);font-size:12px">${fmt(amt)} (${p}%)</span></div><div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:var(--red)"></div></div></div>`;
+  }).join('')||'<div class="empty">本月尚無支出</div>';
+  // list
+  document.getElementById('cf-list').innerHTML=[...mCFs].sort((a,b)=>b.date.localeCompare(a.date)).map(c=>{
+    const inc=c.type==='income';
     return `<div class="cf-row">
-      <div class="cf-icon" style="background:${isInc?'#1D9E7522':'#D85A3022'}">${CAT_ICONS[c.cat]||'📌'}</div>
-      <div class="cf-info">
-        <div class="cf-desc">${c.desc}</div>
-        <div class="cf-cat">${c.cat}</div>
-      </div>
-      <div class="cf-right">
-        <div class="cf-amount ${isInc?'pos':'neg'}">${isInc?'+':'-'}${fmt(c.amount)}</div>
-        <div class="cf-date">${c.date}</div>
-      </div>
+      <div class="cf-icon" style="background:${inc?'#1D9E7522':'#D85A3022'}">${CICONS[c.cat]||'📌'}</div>
+      <div class="cf-info"><div class="cf-desc">${c.desc}</div><div class="cf-cat">${c.cat}</div></div>
+      <div class="cf-right"><div class="cf-amount ${inc?'pos':'neg'}">${inc?'+':'-'}${fmt(c.amount)}</div><div class="cf-date">${c.date}</div></div>
       <div style="margin-left:6px"><button class="btn-danger" onclick="removeCF(${c.id})">刪</button></div>
     </div>`;
-  }).join('') || '<div class="empty">本月尚無紀錄<br><small style="color:var(--text3)">點右上「＋ 新增」開始記帳</small></div>';
-
+  }).join('')||'<div class="empty">本月尚無紀錄<br><small style="color:var(--text3)">點右上「＋ 新增」開始記帳</small></div>';
   renderBalanceChart();
 }
 
-function renderBalanceChart() {
-  const months = [];
-  for (let i=5; i>=0; i--) {
-    const d = new Date(currentMonth);
-    d.setMonth(d.getMonth()-i);
-    months.push(getMonthKey(d));
-  }
-  const labels = months.map(m => { const p=m.split('-'); return p[1]+'月'; });
-  const data = months.map(m => {
-    const mCFs = cashflows.filter(c=>c.month===m);
-    const inc = mCFs.filter(c=>c.type==='income').reduce((s,c)=>s+c.amount,0);
-    const exp = mCFs.filter(c=>c.type==='expense').reduce((s,c)=>s+c.amount,0);
-    return inc - exp;
-  });
-
-  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const posColor = '#1D9E75', negColor = '#D85A30';
-  const barColors = data.map(v => v>=0 ? posColor+'bb' : negColor+'bb');
-  const borderColors = data.map(v => v>=0 ? posColor : negColor);
-  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
-  const textColor = isDark ? '#6b6b68' : '#9e9d99';
-
-  if (balanceChart) { balanceChart.destroy(); balanceChart = null; }
-  const ctx = document.getElementById('balance-chart').getContext('2d');
-  balanceChart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        backgroundColor: barColors,
-        borderColor: borderColors,
-        borderWidth: 1.5,
-        borderRadius: 4,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: { legend: { display: false }, tooltip: {
-        callbacks: { label: ctx => fmtShort(ctx.raw) }
-      }},
-      scales: {
-        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } },
-        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: v => fmtShort(v) } }
-      }
+function renderGoals(income,expense,balance){
+  const totalTWD=assets.reduce((s,a)=>s+toTWD(a.value,a.currency),0);
+  let html='';
+  if(!goals.balance?.on && !goals.savings?.on && !goals.expense?.on){
+    html='<div style="text-align:center;color:var(--text3);font-size:12px;padding:8px 0">尚未設定目標，點右上「設定目標」開始</div>';
+  } else {
+    // 每月結餘目標
+    if(goals.balance?.on && goals.balance.val){
+      const target=Number(goals.balance.val);
+      const pct=Math.min(100,Math.max(0,(balance/target*100)));
+      const over=balance>=target;
+      const badge=over?'badge-green':(pct>=70?'badge-amber':'badge-red');
+      const badgeText=over?'達標 ✓':(pct.toFixed(0)+'%');
+      const barColor=over?'var(--green)':(pct>=70?'var(--amber)':'var(--red)');
+      html+=`<div class="goal-card">
+        <div class="goal-header">
+          <div><div class="goal-title">每月結餘目標</div><div class="goal-sub">目標 ${fmt(target)}</div></div>
+          <span class="goal-badge ${badge}">${badgeText}</span>
+        </div>
+        <div class="goal-bar-bg"><div class="goal-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="goal-nums"><span>本月結餘 ${fmt(balance)}</span><span>目標 ${fmt(target)}</span></div>
+      </div>`;
     }
+    // 包山目標
+    if(goals.savings?.on && goals.savings.val){
+      const target=Number(goals.savings.val);
+      const pct=Math.min(100,Math.max(0,(totalTWD/target*100)));
+      const over=totalTWD>=target;
+      const badge=over?'badge-green':(pct>=70?'badge-amber':'badge-red');
+      const badgeText=over?'達標 ✓':(pct.toFixed(0)+'%');
+      const barColor=over?'var(--green)':(pct>=70?'var(--amber)':'var(--blue)');
+      html+=`<div class="goal-card">
+        <div class="goal-header">
+          <div><div class="goal-title">存款包山目標</div><div class="goal-sub">目標總資產 ${fmt(target)}</div></div>
+          <span class="goal-badge ${badge}">${badgeText}</span>
+        </div>
+        <div class="goal-bar-bg"><div class="goal-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="goal-nums"><span>目前 ${fmt(totalTWD)}</span><span>目標 ${fmt(target)}</span></div>
+      </div>`;
+    }
+    // 支出上限
+    if(goals.expense?.on && goals.expense.val){
+      const limit=Number(goals.expense.val);
+      const pct=Math.min(100,Math.max(0,(expense/limit*100)));
+      const over=expense>limit;
+      const badge=over?'badge-red':(pct>=85?'badge-amber':'badge-green');
+      const badgeText=over?'超標 !':(pct.toFixed(0)+'%');
+      const barColor=over?'var(--red)':(pct>=85?'var(--amber)':'var(--green)');
+      html+=`<div class="goal-card">
+        <div class="goal-header">
+          <div><div class="goal-title">每月支出上限</div><div class="goal-sub">上限 ${fmt(limit)}</div></div>
+          <span class="goal-badge ${badge}">${badgeText}</span>
+        </div>
+        <div class="goal-bar-bg"><div class="goal-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <div class="goal-nums"><span>本月支出 ${fmt(expense)}</span><span>上限 ${fmt(limit)}</span></div>
+      </div>`;
+    }
+  }
+  document.getElementById('goals-area').innerHTML=html;
+}
+
+function renderBalanceChart(){
+  const months=[];
+  for(let i=5;i>=0;i--){const d=new Date(currentMonth);d.setMonth(d.getMonth()-i);months.push(getMonthKey(d))}
+  const labels=months.map(m=>m.split('-')[1]+'月');
+  const data=months.map(m=>{
+    const mc=cashflows.filter(c=>c.month===m);
+    return mc.filter(c=>c.type==='income').reduce((s,c)=>s+c.amount,0)-mc.filter(c=>c.type==='expense').reduce((s,c)=>s+c.amount,0);
+  });
+  const isDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const gc=isDark?'rgba(255,255,255,0.08)':'rgba(0,0,0,0.06)',tc=isDark?'#6b6b68':'#9e9d99';
+  if(balanceChart){balanceChart.destroy();balanceChart=null}
+  balanceChart=new Chart(document.getElementById('balance-chart').getContext('2d'),{
+    type:'bar',
+    data:{labels,datasets:[{data,backgroundColor:data.map(v=>v>=0?'#1D9E75bb':'#D85A30bb'),borderColor:data.map(v=>v>=0?'#1D9E75':'#D85A30'),borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>fmtShort(c.raw)}}},scales:{x:{grid:{display:false},ticks:{color:tc,font:{size:11}}},y:{grid:{color:gc},ticks:{color:tc,font:{size:11},callback:v=>fmtShort(v)}}}}
   });
 }
 
-function renderHistory() {
-  const typeColor = { add:'#1D9E75', remove:'#D85A30', update:'#185FA5' };
-  document.getElementById('history-list').innerHTML = history.slice(0,50).map(h =>
-    `<div class="history-row">
-      <div class="history-dot" style="background:${typeColor[h.type]||'#888'}"></div>
-      <div class="history-info"><div class="history-desc">${h.desc}</div><div class="history-date">${h.date}</div></div>
-      <div class="history-amount" style="color:${typeColor[h.type]||'var(--text)'}">${h.amount}</div>
-    </div>`
-  ).join('') || '<div class="empty">尚無紀錄</div>';
+function renderHistory(){
+  const tc={add:'#1D9E75',remove:'#D85A30',update:'#185FA5'};
+  document.getElementById('history-list').innerHTML=history.slice(0,50).map(h=>
+    `<div class="history-row"><div class="history-dot" style="background:${tc[h.type]||'#888'}"></div><div class="history-info"><div class="history-desc">${h.desc}</div><div class="history-date">${h.date}</div></div><div class="history-amount" style="color:${tc[h.type]||'var(--text)'}">${h.amount}</div></div>`
+  ).join('')||'<div class="empty">尚無紀錄</div>';
 }
 
-function changeMonth(dir) {
-  currentMonth.setMonth(currentMonth.getMonth()+dir);
-  renderCashflow();
+function changeMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);renderCashflow()}
+
+// === 資產 Modal ===
+function openAssetModal(id=null){
+  assetEditId=id;
+  if(id){
+    const a=assets.find(x=>x.id===id);
+    document.getElementById('asset-modal-title').textContent='編輯資產';
+    document.getElementById('asset-save-btn').textContent='儲存';
+    document.getElementById('a-name').value=a.name;
+    document.getElementById('a-type').value=a.type;
+    document.getElementById('a-currency').value=a.currency;
+    document.getElementById('a-cost').value=a.cost;
+    document.getElementById('a-value').value=a.value;
+    document.getElementById('a-note').value=a.note||'';
+  } else {
+    document.getElementById('asset-modal-title').textContent='新增資產';
+    document.getElementById('asset-save-btn').textContent='新增資產';
+    ['a-name','a-cost','a-value','a-note'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('a-type').value='cash';
+    document.getElementById('a-currency').value='TWD';
+  }
+  document.getElementById('asset-modal').classList.add('open');
+}
+function closeAssetModal(e){if(!e||e.target===document.getElementById('asset-modal'))document.getElementById('asset-modal').classList.remove('open')}
+
+async function saveAsset(){
+  const name=document.getElementById('a-name').value.trim();
+  if(!name){toast('請填寫資產名稱');return}
+  const type=document.getElementById('a-type').value;
+  const currency=document.getElementById('a-currency').value;
+  const cost=parseFloat(document.getElementById('a-cost').value)||0;
+  const value=parseFloat(document.getElementById('a-value').value)||0;
+  const note=document.getElementById('a-note').value.trim();
+  const today=new Date().toISOString().split('T')[0];
+  if(assetEditId){
+    const a=assets.find(x=>x.id===assetEditId);
+    Object.assign(a,{name,type,currency,cost,value,note});
+    history.unshift({date:today,desc:`更新：${name}`,amount:`${currency} ${value.toLocaleString()}`,type:'update'});
+  } else {
+    assets.push({id:nextId++,name,type,currency,cost,value,note,date:today});
+    history.unshift({date:today,desc:`新增：${name}`,amount:`+ ${currency} ${cost.toLocaleString()}`,type:'add'});
+  }
+  document.getElementById('asset-modal').classList.remove('open');
+  renderAll();
+  const btn=document.getElementById('asset-save-btn');
+  btn.textContent='同步中...';btn.disabled=true;
+  try{await apiSave('saveAssets',assets);await apiSave('saveHistory',history);toast('✓ 已同步至 Sheets')}
+  catch(e){toast('儲存成功，但同步失敗')}
+  btn.textContent=assetEditId?'儲存':'新增資產';btn.disabled=false;
+}
+
+async function removeAsset(id){
+  const a=assets.find(x=>x.id===id);
+  if(!confirm(`確定要刪除「${a.name}」？`))return;
+  const today=new Date().toISOString().split('T')[0];
+  history.unshift({date:today,desc:`刪除：${a.name}`,amount:`- ${a.currency} ${a.value.toLocaleString()}`,type:'remove'});
+  assets=assets.filter(x=>x.id!==id);
+  renderAll();
+  try{await apiSave('saveAssets',assets);await apiSave('saveHistory',history);toast('✓ 已刪除並同步')}
+  catch(e){toast('刪除成功，但同步失敗')}
 }
 
 // === 現金流 Modal ===
-let cfEditId = null;
-function openCFModal(id=null) {
-  cfEditId = id;
-  selectedCat = '';
-  const today = new Date().toISOString().split('T')[0];
-  if (id) {
-    const c = cashflows.find(x=>x.id===id);
-    setCFType(c.type);
-    document.getElementById('cf-amount').value = c.amount;
-    document.getElementById('cf-desc').value = c.desc;
-    document.getElementById('cf-date').value = c.date;
-    selectedCat = c.cat;
-    document.getElementById('cf-modal-title').textContent = '編輯收支';
-    document.getElementById('cf-save-btn').textContent = '儲存';
-  } else {
-    setCFType('income');
-    document.getElementById('cf-amount').value = '';
-    document.getElementById('cf-desc').value = '';
-    document.getElementById('cf-date').value = today;
-    document.getElementById('cf-modal-title').textContent = '新增收支';
-    document.getElementById('cf-save-btn').textContent = '新增';
-  }
+function openCFModal(){
+  selectedCat='';
+  setCFType('income');
+  document.getElementById('cf-amount').value='';
+  document.getElementById('cf-desc').value='';
+  document.getElementById('cf-date').value=new Date().toISOString().split('T')[0];
   renderCatPills();
   document.getElementById('cf-modal').classList.add('open');
 }
+function closeCFModal(e){if(!e||e.target===document.getElementById('cf-modal'))document.getElementById('cf-modal').classList.remove('open')}
+function setCFType(t){selectedCFType=t;selectedCat='';document.getElementById('cf-type-income').classList.toggle('active',t==='income');document.getElementById('cf-type-expense').classList.toggle('active',t==='expense');renderCatPills()}
+function renderCatPills(){const cats=selectedCFType==='income'?INCOME_CATS:EXPENSE_CATS;document.getElementById('cat-pills').innerHTML=cats.map(c=>`<div class="cat-pill${selectedCat===c?' selected':''}" onclick="selectCat('${c}')">${CICONS[c]||''} ${c}</div>`).join('')}
+function selectCat(cat){selectedCat=cat;renderCatPills()}
 
-function closeCFModal(e) {
-  if (!e || e.target===document.getElementById('cf-modal'))
-    document.getElementById('cf-modal').classList.remove('open');
-}
-
-function setCFType(type) {
-  selectedCFType = type;
-  selectedCat = '';
-  document.getElementById('cf-type-income').classList.toggle('active', type==='income');
-  document.getElementById('cf-type-expense').classList.toggle('active', type==='expense');
-  renderCatPills();
-}
-
-function renderCatPills() {
-  const cats = selectedCFType==='income' ? INCOME_CATS : EXPENSE_CATS;
-  document.getElementById('cat-pills').innerHTML = cats.map(c =>
-    `<div class="cat-pill${selectedCat===c?' selected':''}" onclick="selectCat('${c}')">${CAT_ICONS[c]||''} ${c}</div>`
-  ).join('');
-}
-
-function selectCat(cat) {
-  selectedCat = cat;
-  renderCatPills();
-}
-
-async function saveCF() {
-  const amount = parseFloat(document.getElementById('cf-amount').value)||0;
-  const desc   = document.getElementById('cf-desc').value.trim();
-  const date   = document.getElementById('cf-date').value;
-  if (!amount) { toast('請輸入金額'); return; }
-  if (!desc)   { toast('請填寫描述'); return; }
-  if (!selectedCat) { toast('請選擇分類'); return; }
-
-  const month = date.substring(0,7);
-  if (cfEditId) {
-    const c = cashflows.find(x=>x.id===cfEditId);
-    Object.assign(c, { type:selectedCFType, amount, desc, cat:selectedCat, date, month });
-  } else {
-    cashflows.push({ id:nextCFId++, type:selectedCFType, amount, desc, cat:selectedCat, date, month });
-  }
-
+async function saveCF(){
+  const amount=parseFloat(document.getElementById('cf-amount').value)||0;
+  const desc=document.getElementById('cf-desc').value.trim();
+  const date=document.getElementById('cf-date').value;
+  if(!amount){toast('請輸入金額');return}
+  if(!desc){toast('請填寫描述');return}
+  if(!selectedCat){toast('請選擇分類');return}
+  const month=date.substring(0,7);
+  cashflows.push({id:nextCFId++,type:selectedCFType,amount,desc,cat:selectedCat,date,month});
   document.getElementById('cf-modal').classList.remove('open');
   renderCashflow();
-
-  const btn = document.getElementById('cf-save-btn');
-  btn.textContent='同步中...'; btn.disabled=true;
-  try {
-    await apiSave('saveCashflows', cashflows);
-    toast('✓ 已同步至 Sheets');
-  } catch(e) { toast('記錄成功，但同步失敗'); }
-  btn.textContent='新增'; btn.disabled=false;
+  const btn=document.getElementById('cf-save-btn');
+  btn.textContent='同步中...';btn.disabled=true;
+  try{await apiSave('saveCashflows',cashflows);toast('✓ 已同步至 Sheets')}
+  catch(e){toast('記錄成功，但同步失敗')}
+  btn.textContent='新增';btn.disabled=false;
 }
 
-async function removeCF(id) {
-  if (!confirm('確定刪除這筆紀錄？')) return;
-  cashflows = cashflows.filter(c=>c.id!==id);
+async function removeCF(id){
+  if(!confirm('確定刪除這筆紀錄？'))return;
+  cashflows=cashflows.filter(c=>c.id!==id);
   renderCashflow();
-  try { await apiSave('saveCashflows', cashflows); toast('✓ 已刪除並同步'); }
-  catch(e) { toast('刪除成功，但同步失敗'); }
+  try{await apiSave('saveCashflows',cashflows);toast('✓ 已刪除並同步')}
+  catch(e){toast('刪除成功，但同步失敗')}
 }
 
-// === 資產 ===
-async function addAsset() {
-  const name = document.getElementById('a-name').value.trim();
-  if (!name) { toast('請填寫資產名稱'); return; }
-  const type     = document.getElementById('a-type').value;
-  const currency = document.getElementById('a-currency').value;
-  const cost     = parseFloat(document.getElementById('a-cost').value)||0;
-  const value    = parseFloat(document.getElementById('a-value').value)||0;
-  const note     = document.getElementById('a-note').value.trim();
-  const today    = new Date().toISOString().split('T')[0];
-  assets.push({ id:nextId++, name, type, currency, cost, value, note, date:today });
-  history.unshift({ date:today, desc:`新增：${name}`, amount:`+ ${currency} ${cost.toLocaleString()}`, type:'add' });
-  renderAll();
-  ['a-name','a-cost','a-value','a-note'].forEach(id => document.getElementById(id).value='');
-  const btn = document.getElementById('add-btn');
-  btn.textContent='同步中...'; btn.disabled=true;
-  try {
-    await apiSave('saveAssets', assets);
-    await apiSave('saveHistory', history);
-    toast('✓ 已新增並同步');
-    switchTab('assets', document.querySelectorAll('.tab')[1]);
-  } catch(e) { toast('新增成功，但同步失敗'); }
-  btn.textContent='新增資產'; btn.disabled=false;
+// === 目標 Modal ===
+function openGoalModal(){
+  document.getElementById('goal-balance-on').checked=!!goals.balance?.on;
+  document.getElementById('goal-balance-val').value=goals.balance?.val||'';
+  document.getElementById('goal-balance-val').disabled=!goals.balance?.on;
+  document.getElementById('goal-savings-on').checked=!!goals.savings?.on;
+  document.getElementById('goal-savings-val').value=goals.savings?.val||'';
+  document.getElementById('goal-savings-val').disabled=!goals.savings?.on;
+  document.getElementById('goal-expense-on').checked=!!goals.expense?.on;
+  document.getElementById('goal-expense-val').value=goals.expense?.val||'';
+  document.getElementById('goal-expense-val').disabled=!goals.expense?.on;
+  document.getElementById('goal-modal').classList.add('open');
+}
+function closeGoalModal(e){if(!e||e.target===document.getElementById('goal-modal'))document.getElementById('goal-modal').classList.remove('open')}
+function toggleGoalField(type){
+  const on=document.getElementById('goal-'+type+'-on').checked;
+  document.getElementById('goal-'+type+'-val').disabled=!on;
+}
+function saveGoals(){
+  goals={
+    balance:{on:document.getElementById('goal-balance-on').checked,val:document.getElementById('goal-balance-val').value},
+    savings:{on:document.getElementById('goal-savings-on').checked,val:document.getElementById('goal-savings-val').value},
+    expense:{on:document.getElementById('goal-expense-on').checked,val:document.getElementById('goal-expense-val').value},
+  };
+  localStorage.setItem('cf_goals',JSON.stringify(goals));
+  document.getElementById('goal-modal').classList.remove('open');
+  renderCashflow();
+  toast('✓ 目標已儲存');
 }
 
-async function removeAsset(id) {
-  const a = assets.find(x=>x.id===id);
-  if (!confirm(`確定要刪除「${a.name}」？`)) return;
-  const today = new Date().toISOString().split('T')[0];
-  history.unshift({ date:today, desc:`刪除：${a.name}`, amount:`- ${a.currency} ${a.value.toLocaleString()}`, type:'remove' });
-  assets = assets.filter(x=>x.id!==id);
-  renderAll();
-  try { await apiSave('saveAssets', assets); await apiSave('saveHistory', history); toast('✓ 已刪除並同步'); }
-  catch(e) { toast('刪除成功，但同步失敗'); }
+function calcFX(){
+  const amt=parseFloat(document.getElementById('fx-amount').value)||0;
+  const from=document.getElementById('fx-from').value,to=document.getElementById('fx-to').value;
+  const rate=RATES[from][to];
+  document.getElementById('fx-result').textContent=fmt(amt*rate,to);
+  document.getElementById('fx-rate-note').textContent=`1 ${from} = ${rate.toFixed(4)} ${to}`;
 }
 
-function openEdit(id) {
-  const a = assets.find(x=>x.id===id);
-  document.getElementById('edit-id').value = id;
-  document.getElementById('edit-name').value  = a.name;
-  document.getElementById('edit-cost').value  = a.cost;
-  document.getElementById('edit-value').value = a.value;
-  document.getElementById('edit-note').value  = a.note||'';
-  document.getElementById('modal').classList.add('open');
-}
-function closeModal(e) {
-  if (!e || e.target===document.getElementById('modal'))
-    document.getElementById('modal').classList.remove('open');
-}
-async function saveEdit() {
-  const id = Number(document.getElementById('edit-id').value);
-  const a  = assets.find(x=>x.id===id);
-  a.name  = document.getElementById('edit-name').value.trim();
-  a.cost  = parseFloat(document.getElementById('edit-cost').value)||0;
-  a.value = parseFloat(document.getElementById('edit-value').value)||0;
-  a.note  = document.getElementById('edit-note').value.trim();
-  const today = new Date().toISOString().split('T')[0];
-  history.unshift({ date:today, desc:`更新：${a.name}`, amount:`${a.currency} ${a.value.toLocaleString()}`, type:'update' });
-  document.getElementById('modal').classList.remove('open');
-  renderAll();
-  const btn = document.getElementById('edit-save-btn');
-  btn.textContent='同步中...'; btn.disabled=true;
-  try { await apiSave('saveAssets', assets); await apiSave('saveHistory', history); toast('✓ 已更新並同步'); }
-  catch(e) { toast('更新成功，但同步失敗'); }
-  btn.textContent='儲存'; btn.disabled=false;
+function switchTab(id,btn){
+  ['overview','assets','cashflow','history','fx'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===id?'':'none'});
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  if(id==='fx')calcFX();
+  if(id==='cashflow')renderCashflow();
 }
 
-function calcFX() {
-  const amt  = parseFloat(document.getElementById('fx-amount').value)||0;
-  const from = document.getElementById('fx-from').value;
-  const to   = document.getElementById('fx-to').value;
-  const rate = RATES[from][to];
-  document.getElementById('fx-result').textContent    = fmt(amt*rate, to);
-  document.getElementById('fx-rate-note').textContent = `1 ${from} = ${rate.toFixed(4)} ${to}`;
-}
-
-function switchTab(id, btn) {
-  ['overview','assets','cashflow','add','history','fx'].forEach(t => {
-    document.getElementById('tab-'+t).style.display = t===id ? '' : 'none';
-  });
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  if (btn) btn.classList.add('active');
-  if (id==='fx') calcFX();
-  if (id==='cashflow') renderCashflow();
-}
-
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
 loadData();
 </script>
 </body>
