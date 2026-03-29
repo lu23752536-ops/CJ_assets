@@ -15,7 +15,7 @@
     --bg: #ffffff; --bg2: #f5f5f3; --bg3: #ebebea;
     --text: #1a1a18; --text2: #6b6b68; --text3: #9e9d99;
     --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
-    --green: #1D9E75; --blue: #185FA5; --red: #D85A30; --amber: #BA7517; --gray: #5F5E5A;
+    --green: #1D9E75; --blue: #185FA5; --red: #D85A30; --amber: #BA7517;
     --radius: 10px; --radius-lg: 14px;
     --shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
@@ -28,26 +28,34 @@
   }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   body { display: flex; flex-direction: column; max-width: 640px; margin: 0 auto; }
+
   .header { padding: 16px 16px 0; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .app-title { font-size: 13px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; }
-  .sync-btn { font-size: 12px; color: var(--blue); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px; }
-  .sync-btn:active { background: var(--bg2); }
+  .sync-btn { font-size: 12px; color: var(--blue); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
   .total-label { font-size: 12px; color: var(--text3); margin-bottom: 2px; }
   .total-value { font-size: 32px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
   .total-pnl { font-size: 13px; margin-top: 2px; min-height: 18px; }
-  .tabs { display: flex; padding: 12px 16px 0; border-bottom: 0.5px solid var(--border); }
-  .tab { flex: 1; padding: 8px 4px; font-size: 13px; color: var(--text2); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; }
+  .status-bar { font-size: 11px; color: var(--text3); text-align: center; padding: 4px 0 0; min-height: 16px; }
+
+  .tabs { display: flex; padding: 12px 16px 0; border-bottom: 0.5px solid var(--border); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { flex-shrink: 0; padding: 8px 10px; font-size: 13px; color: var(--text2); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
+
   .content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 40px; }
+
   .card { background: var(--bg2); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px; }
   .card-white { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
   .card-title { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 10px; text-transform: uppercase; }
+
   .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .metric { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; }
   .metric-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
   .metric-value { font-size: 20px; font-weight: 600; color: var(--text); }
   .metric-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .metrics-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+
   .asset-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
   .asset-row:last-child { border-bottom: none; padding-bottom: 0; }
   .asset-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
@@ -57,12 +65,12 @@
   .asset-right { text-align: right; flex-shrink: 0; }
   .asset-amount { font-size: 14px; font-weight: 500; color: var(--text); }
   .asset-pnl { font-size: 11px; margin-top: 1px; }
+
   .alloc-row { margin-bottom: 10px; }
   .alloc-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
-  .alloc-name { color: var(--text2); }
-  .alloc-pct { color: var(--text3); }
   .bar-bg { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
   .form-section { margin-bottom: 14px; }
   .form-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: block; }
   .form-input { width: 100%; padding: 10px 12px; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
@@ -70,11 +78,46 @@
   select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-color: var(--bg); padding-right: 32px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
   .btn-primary { width: 100%; padding: 12px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; margin-top: 4px; }
   .btn-primary:active { opacity: 0.8; }
+  .btn-primary:disabled { opacity: 0.5; }
   .btn-danger { padding: 6px 10px; background: none; border: 0.5px solid var(--red); color: var(--red); border-radius: 6px; font-size: 11px; cursor: pointer; }
   .btn-edit { padding: 6px 10px; background: none; border: 0.5px solid var(--border2); color: var(--text2); border-radius: 6px; font-size: 11px; cursor: pointer; }
   .btn-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+  /* type toggle */
+  .type-toggle { display: flex; background: var(--bg2); border-radius: var(--radius); padding: 3px; margin-bottom: 14px; }
+  .type-btn { flex: 1; padding: 8px; font-size: 13px; border: none; background: none; border-radius: 8px; cursor: pointer; color: var(--text2); transition: all 0.15s; }
+  .type-btn.active { background: var(--bg); color: var(--text); font-weight: 500; box-shadow: var(--shadow); }
+  .type-btn.income.active { color: var(--green); }
+  .type-btn.expense.active { color: var(--red); }
+
+  /* month selector */
+  .month-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .month-label { font-size: 15px; font-weight: 500; color: var(--text); }
+  .month-btn { background: var(--bg2); border: none; border-radius: 8px; width: 32px; height: 32px; cursor: pointer; font-size: 16px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
+
+  /* cashflow rows */
+  .cf-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
+  .cf-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .cf-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .cf-info { flex: 1; min-width: 0; }
+  .cf-desc { font-size: 14px; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cf-cat { font-size: 11px; color: var(--text3); margin-top: 1px; }
+  .cf-right { text-align: right; flex-shrink: 0; }
+  .cf-amount { font-size: 14px; font-weight: 500; }
+  .cf-date { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  /* mini chart */
+  .chart-wrap { position: relative; width: 100%; height: 120px; }
+  canvas { display: block; }
+
+  /* category pills */
+  .cat-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .cat-pill { padding: 5px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 0.5px solid var(--border2); background: var(--bg2); color: var(--text2); transition: all 0.15s; }
+  .cat-pill.selected { background: var(--text); color: var(--bg); border-color: var(--text); }
+
   .history-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
   .history-row:last-child { border-bottom: none; }
   .history-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
@@ -82,18 +125,20 @@
   .history-desc { font-size: 13px; color: var(--text); }
   .history-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
   .history-amount { font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
+
   .fx-display { font-size: 28px; font-weight: 600; color: var(--text); margin: 8px 0 4px; }
   .fx-rate { font-size: 12px; color: var(--text3); }
   .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
   .rate-item { background: var(--bg3); border-radius: 8px; padding: 10px 12px; }
   .rate-pair { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
   .rate-val { font-size: 16px; font-weight: 600; color: var(--text); }
+
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
   .toast.show { opacity: 1; }
-  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border2); border-top-color: currentColor; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 4px; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+
   .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 32px 0; }
   .pos { color: var(--green); } .neg { color: var(--red); }
+
   .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-backdrop.open { opacity: 1; pointer-events: all; }
   .modal { background: var(--bg); border-radius: 20px 20px 0 0; padding: 20px 16px 48px; width: 100%; max-width: 640px; transform: translateY(100%); transition: transform 0.3s ease; }
@@ -101,7 +146,10 @@
   .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .modal-title { font-size: 16px; font-weight: 600; }
   .modal-close { background: var(--bg2); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
-  .status-bar { font-size: 11px; color: var(--text3); text-align: center; padding: 4px 0 0; min-height: 16px; }
+
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 12px 0; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .section-title { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; }
 </style>
 </head>
 <body>
@@ -120,13 +168,15 @@
 <div class="tabs">
   <button class="tab active" onclick="switchTab('overview',this)">總覽</button>
   <button class="tab" onclick="switchTab('assets',this)">資產</button>
+  <button class="tab" onclick="switchTab('cashflow',this)">現金流</button>
   <button class="tab" onclick="switchTab('add',this)">新增</button>
   <button class="tab" onclick="switchTab('history',this)">紀錄</button>
   <button class="tab" onclick="switchTab('fx',this)">換算</button>
 </div>
 
 <div class="content">
-  <!-- Overview -->
+
+  <!-- 總覽 -->
   <div id="tab-overview">
     <div class="metrics">
       <div class="metric">
@@ -150,12 +200,58 @@
     </div>
   </div>
 
-  <!-- Assets -->
+  <!-- 資產 -->
   <div id="tab-assets" style="display:none">
     <div id="asset-list"></div>
   </div>
 
-  <!-- Add -->
+  <!-- 現金流 -->
+  <div id="tab-cashflow" style="display:none">
+    <div class="month-nav">
+      <button class="month-btn" onclick="changeMonth(-1)">‹</button>
+      <span class="month-label" id="month-label"></span>
+      <button class="month-btn" onclick="changeMonth(1)">›</button>
+    </div>
+
+    <div class="metrics-3">
+      <div class="metric">
+        <div class="metric-label">收入</div>
+        <div class="metric-value pos" id="cf-income">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">支出</div>
+        <div class="metric-value neg" id="cf-expense">—</div>
+      </div>
+      <div class="metric">
+        <div class="metric-label">結餘</div>
+        <div class="metric-value" id="cf-balance">—</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title" style="margin:0">結餘走勢（近6個月）</div>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="balance-chart"></canvas>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">支出分類</div>
+      <div id="expense-cats"></div>
+    </div>
+
+    <div class="card">
+      <div class="section-header">
+        <div class="card-title" style="margin:0">本月明細</div>
+        <button class="btn-edit" onclick="openCFModal()">＋ 新增</button>
+      </div>
+      <div id="cf-list"></div>
+    </div>
+  </div>
+
+  <!-- 新增資產 -->
   <div id="tab-add" style="display:none">
     <div class="card-white">
       <div class="form-section">
@@ -200,12 +296,12 @@
     </div>
   </div>
 
-  <!-- History -->
+  <!-- 歷史紀錄 -->
   <div id="tab-history" style="display:none">
     <div class="card"><div id="history-list"></div></div>
   </div>
 
-  <!-- FX -->
+  <!-- 換算 -->
   <div id="tab-fx" style="display:none">
     <div class="card-white">
       <div class="card-title">幣別換算</div>
@@ -241,9 +337,10 @@
       <div style="font-size:11px;color:var(--text3);margin-top:10px">匯率為參考基準，請依銀行牌告為準。</div>
     </div>
   </div>
-</div>
 
-<!-- Edit Modal -->
+</div><!-- end content -->
+
+<!-- 編輯資產 Modal -->
 <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-header">
@@ -273,108 +370,137 @@
   </div>
 </div>
 
+<!-- 新增現金流 Modal -->
+<div class="modal-backdrop" id="cf-modal" onclick="closeCFModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="cf-modal-title">新增收支</div>
+      <button class="modal-close" onclick="closeCFModal()">✕</button>
+    </div>
+    <div class="type-toggle">
+      <button class="type-btn income active" id="cf-type-income" onclick="setCFType('income')">收入</button>
+      <button class="type-btn expense" id="cf-type-expense" onclick="setCFType('expense')">支出</button>
+    </div>
+    <div class="form-section">
+      <label class="form-label">金額（TWD）</label>
+      <input class="form-input" id="cf-amount" type="number" placeholder="0" inputmode="decimal">
+    </div>
+    <div class="form-section">
+      <label class="form-label">描述</label>
+      <input class="form-input" id="cf-desc" placeholder="例：三月薪資">
+    </div>
+    <div class="form-section">
+      <label class="form-label">分類</label>
+      <div class="cat-grid" id="cat-pills"></div>
+    </div>
+    <div class="form-section">
+      <label class="form-label">日期</label>
+      <input class="form-input" id="cf-date" type="date">
+    </div>
+    <button class="btn-primary" id="cf-save-btn" onclick="saveCF()">新增</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const API = 'https://script.google.com/macros/s/AKfycbyi8AFT9U29DA9os2uTl6iTyDI8T5b6YBXubXV7XfLi9ujR0vThYMBg5QA3FrIAJy9WoA/exec';
 const RATES = { TWD:{TWD:1,USD:1/32.5,CAD:1/23.8}, USD:{TWD:32.5,USD:1,CAD:1.37}, CAD:{TWD:23.8,USD:0.73,CAD:1} };
-const COLORS = { cash:'#1D9E75', stock:'#185FA5', crypto:'#BA7517', realestate:'#993556', other:'#5F5E5A' };
-const ICONS  = { cash:'💰', stock:'📈', crypto:'🪙', realestate:'🏠', other:'📊' };
-const LABELS = { cash:'現金／存款', stock:'股票／ETF', crypto:'加密貨幣', realestate:'房地產', other:'其他投資' };
+const ASSET_COLORS = { cash:'#1D9E75', stock:'#185FA5', crypto:'#BA7517', realestate:'#993556', other:'#5F5E5A' };
+const ASSET_ICONS  = { cash:'💰', stock:'📈', crypto:'🪙', realestate:'🏠', other:'📊' };
+const ASSET_LABELS = { cash:'現金／存款', stock:'股票／ETF', crypto:'加密貨幣', realestate:'房地產', other:'其他投資' };
 
-let assets = [], history = [], nextId = 1, cbCounter = 0;
+const INCOME_CATS  = ['薪資', '獎金', '投資收益', '租金收入', '副業', '其他收入'];
+const EXPENSE_CATS = ['餐飲', '交通', '購物', '娛樂', '醫療', '住宿', '學費', '保險', '訂閱', '其他支出'];
+const CAT_ICONS = { '薪資':'💼','獎金':'🎁','投資收益':'📈','租金收入':'🏠','副業':'💡','其他收入':'➕','餐飲':'🍜','交通':'🚇','購物':'🛍','娛樂':'🎮','醫療':'💊','住宿':'🏡','學費':'📚','保險':'🛡','訂閱':'📱','其他支出':'📌' };
 
-// JSONP 呼叫：繞過 CORS 限制
+let assets = [], history = [], cashflows = [], nextId = 1, nextCFId = 1, cbCounter = 0;
+let currentMonth = new Date(); currentMonth.setDate(1);
+let selectedCFType = 'income';
+let selectedCat = '';
+let balanceChart = null;
+
 function jsonp(params) {
   return new Promise((resolve, reject) => {
     const cbName = '__cb' + (cbCounter++);
-    const timeout = setTimeout(() => {
-      delete window[cbName];
-      reject(new Error('timeout'));
-    }, 15000);
-
+    const timeout = setTimeout(() => { delete window[cbName]; reject(new Error('timeout')); }, 20000);
     window[cbName] = (data) => {
       clearTimeout(timeout);
       delete window[cbName];
-      const el = document.getElementById('_jsonp_' + cbName);
-      if (el) el.remove();
+      document.getElementById('_jsonp_' + cbName)?.remove();
       resolve(data);
     };
-
     const url = new URL(API);
     url.searchParams.set('callback', cbName);
     Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-
-    const script = document.createElement('script');
-    script.id = '_jsonp_' + cbName;
-    script.src = url.toString();
-    script.onerror = () => {
-      clearTimeout(timeout);
-      delete window[cbName];
-      script.remove();
-      reject(new Error('network error'));
-    };
-    document.head.appendChild(script);
+    const s = document.createElement('script');
+    s.id = '_jsonp_' + cbName;
+    s.src = url.toString();
+    s.onerror = () => { clearTimeout(timeout); delete window[cbName]; s.remove(); reject(new Error('network error')); };
+    document.head.appendChild(s);
   });
 }
 
 function toTWD(amount, currency) { return amount * RATES[currency].TWD; }
 
 function fmt(n, currency='TWD') {
-  const abs = Math.abs(n);
-  const sign = n < 0 ? '-' : '';
-  if (currency === 'TWD') return sign + 'NT$' + Math.round(abs).toLocaleString();
-  if (currency === 'USD') return sign + 'US$' + abs.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2});
-  if (currency === 'CAD') return sign + 'CA$' + abs.toLocaleString(undefined, {minimumFractionDigits:0, maximumFractionDigits:2});
+  const abs = Math.abs(n), sign = n < 0 ? '-' : '';
+  if (currency==='TWD') return sign+'NT$'+Math.round(abs).toLocaleString();
+  if (currency==='USD') return sign+'US$'+abs.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
+  if (currency==='CAD') return sign+'CA$'+abs.toLocaleString(undefined,{minimumFractionDigits:0,maximumFractionDigits:2});
   return n.toLocaleString();
+}
+function fmtShort(n) {
+  const abs = Math.abs(n), sign = n < 0 ? '-' : '';
+  if (abs >= 10000) return sign + Math.round(abs/1000) + 'k';
+  return sign + Math.round(abs).toLocaleString();
 }
 
 function setStatus(msg) { document.getElementById('status-bar').textContent = msg; }
-
-function toast(msg, duration=2200) {
+function toast(msg, dur=2200) {
   const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), duration);
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), dur);
 }
 
 async function loadData() {
   document.getElementById('sync-btn').textContent = '同步中...';
-  setStatus('');
   try {
     const data = await jsonp({ action: 'getAll' });
     if (data.error) throw new Error(data.error);
-    assets = (data.assets || []).map(a => ({
-      ...a, id: Number(a.id), cost: Number(a.cost), value: Number(a.value)
-    }));
+    assets = (data.assets||[]).map(a => ({...a, id:Number(a.id), cost:Number(a.cost), value:Number(a.value)}));
     history = data.history || [];
-    nextId = assets.length ? Math.max(...assets.map(a => a.id)) + 1 : 1;
+    cashflows = (data.cashflows||[]).map(c => ({...c, id:Number(c.id), amount:Number(c.amount)}));
+    nextId = assets.length ? Math.max(...assets.map(a=>a.id))+1 : 1;
+    nextCFId = cashflows.length ? Math.max(...cashflows.map(c=>c.id))+1 : 1;
     renderAll();
-    const now = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
-    setStatus('上次同步：' + now);
+    const now = new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
+    setStatus('上次同步：'+now);
     toast('已同步');
-  } catch(e) {
-    toast('同步失敗，請檢查網路');
-    setStatus('同步失敗');
-  }
+  } catch(e) { toast('同步失敗，請檢查網路'); setStatus('同步失敗'); }
   document.getElementById('sync-btn').textContent = '↻ 同步';
 }
 
 async function apiSave(action, data) {
-  const encoded = encodeURIComponent(JSON.stringify(data));
-  const result = await jsonp({ action, data: encoded });
+  const result = await jsonp({ action, data: encodeURIComponent(JSON.stringify(data)) });
   if (result.error) throw new Error(result.error);
   return result;
 }
 
 function renderAll() {
-  const totalTWD = assets.reduce((s,a) => s + toTWD(a.value, a.currency), 0);
-  const totalCost = assets.reduce((s,a) => s + toTWD(a.cost, a.currency), 0);
-  const pnl = totalTWD - totalCost;
-  const pct = totalCost > 0 ? ((pnl/totalCost)*100).toFixed(1) : '0.0';
-  const sign = pnl >= 0 ? '+' : '';
-  const cls = pnl >= 0 ? 'pos' : 'neg';
+  renderOverview();
+  renderAssets();
+  renderCashflow();
+  renderHistory();
+}
 
+function renderOverview() {
+  const totalTWD = assets.reduce((s,a) => s+toTWD(a.value,a.currency), 0);
+  const totalCost = assets.reduce((s,a) => s+toTWD(a.cost,a.currency), 0);
+  const pnl = totalTWD - totalCost;
+  const pct = totalCost>0 ? ((pnl/totalCost)*100).toFixed(1) : '0.0';
+  const sign = pnl>=0?'+':''; const cls = pnl>=0?'pos':'neg';
   document.getElementById('total-value').textContent = fmt(totalTWD);
   document.getElementById('total-pnl').innerHTML = `<span class="${cls}">${sign}${fmt(pnl)} (${sign}${pct}%)</span>`;
   document.getElementById('m-count').textContent = assets.length;
@@ -382,43 +508,41 @@ function renderAll() {
   document.getElementById('m-pnl-pct').innerHTML = `<span class="${cls}">${sign}${pct}%</span>`;
 
   const byType = {};
-  assets.forEach(a => { byType[a.type] = (byType[a.type]||0) + toTWD(a.value, a.currency); });
-  const sorted = Object.entries(byType).sort((a,b) => b[1]-a[1]);
-  document.getElementById('alloc-bars').innerHTML = sorted.map(([t,v]) => {
-    const p = totalTWD > 0 ? (v/totalTWD*100).toFixed(1) : 0;
+  assets.forEach(a => { byType[a.type] = (byType[a.type]||0)+toTWD(a.value,a.currency); });
+  document.getElementById('alloc-bars').innerHTML = Object.entries(byType).sort((a,b)=>b[1]-a[1]).map(([t,v]) => {
+    const p = totalTWD>0 ? (v/totalTWD*100).toFixed(1) : 0;
     return `<div class="alloc-row">
-      <div class="alloc-header"><span class="alloc-name">${LABELS[t]}</span><span class="alloc-pct">${p}%</span></div>
-      <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${COLORS[t]}"></div></div>
+      <div class="alloc-header"><span style="color:var(--text2);font-size:12px">${ASSET_LABELS[t]}</span><span style="color:var(--text3);font-size:12px">${p}%</span></div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:${ASSET_COLORS[t]}"></div></div>
     </div>`;
   }).join('') || '<div class="empty">尚無資產</div>';
 
-  const pnlList = assets.map(a => ({
-    name: a.name,
-    pnl: toTWD(a.value - a.cost, a.currency),
-    pct: a.cost > 0 ? ((a.value-a.cost)/a.cost*100).toFixed(1) : '0.0'
-  })).sort((a,b) => b.pnl - a.pnl).slice(0,5);
-  document.getElementById('pnl-list').innerHTML = pnlList.map(a => {
-    const s = a.pnl>=0?'+':''; const c = a.pnl>=0?'pos':'neg';
+  document.getElementById('pnl-list').innerHTML = assets.map(a => ({
+    name:a.name, pnl:toTWD(a.value-a.cost,a.currency),
+    pct:a.cost>0?((a.value-a.cost)/a.cost*100).toFixed(1):'0.0'
+  })).sort((a,b)=>b.pnl-a.pnl).slice(0,5).map(a => {
+    const s=a.pnl>=0?'+':''; const c=a.pnl>=0?'pos':'neg';
     return `<div class="asset-row">
       <div class="asset-info"><div class="asset-name">${a.name}</div></div>
       <div class="asset-right"><div class="asset-amount ${c}">${s}${fmt(a.pnl)}</div><div class="asset-pnl ${c}">${s}${a.pct}%</div></div>
     </div>`;
   }).join('') || '<div class="empty">尚無資產</div>';
+}
 
+function renderAssets() {
   document.getElementById('asset-list').innerHTML = assets.map(a => {
-    const pnl = a.value - a.cost;
-    const pct = a.cost > 0 ? ((pnl/a.cost)*100).toFixed(1) : '0.0';
-    const s = pnl>=0?'+':''; const c = pnl>=0?'pos':'neg';
+    const pnl = a.value-a.cost, pct = a.cost>0?((pnl/a.cost)*100).toFixed(1):'0.0';
+    const s=pnl>=0?'+':''; const c=pnl>=0?'pos':'neg';
     return `<div class="card-white">
       <div class="asset-row" style="padding:0;border:none">
-        <div class="asset-icon" style="background:${COLORS[a.type]}22">${ICONS[a.type]}</div>
+        <div class="asset-icon" style="background:${ASSET_COLORS[a.type]}22">${ASSET_ICONS[a.type]}</div>
         <div class="asset-info">
           <div class="asset-name">${a.name}</div>
-          <div class="asset-sub">${LABELS[a.type]} · ${a.currency}${a.note ? ' · '+a.note : ''}</div>
+          <div class="asset-sub">${ASSET_LABELS[a.type]} · ${a.currency}${a.note?' · '+a.note:''}</div>
         </div>
         <div class="asset-right" style="margin-right:8px">
-          <div class="asset-amount">${fmt(a.value, a.currency)}</div>
-          <div class="asset-pnl ${c}">${s}${fmt(pnl, a.currency)} (${s}${pct}%)</div>
+          <div class="asset-amount">${fmt(a.value,a.currency)}</div>
+          <div class="asset-pnl ${c}">${s}${fmt(pnl,a.currency)} (${s}${pct}%)</div>
         </div>
         <div class="btn-actions">
           <button class="btn-edit" onclick="openEdit(${a.id})">編輯</button>
@@ -427,130 +551,305 @@ function renderAll() {
       </div>
     </div>`;
   }).join('') || '<div class="empty">尚未新增任何資產</div>';
+}
 
+function getMonthKey(date) {
+  return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0');
+}
+
+function renderCashflow() {
+  const key = getMonthKey(currentMonth);
+  document.getElementById('month-label').textContent =
+    currentMonth.getFullYear()+'年'+(currentMonth.getMonth()+1)+'月';
+
+  const monthCFs = cashflows.filter(c => c.month === key);
+  const income  = monthCFs.filter(c=>c.type==='income').reduce((s,c)=>s+c.amount,0);
+  const expense = monthCFs.filter(c=>c.type==='expense').reduce((s,c)=>s+c.amount,0);
+  const balance = income - expense;
+  const balCls  = balance>=0?'pos':'neg';
+
+  document.getElementById('cf-income').textContent  = fmt(income);
+  document.getElementById('cf-expense').textContent = fmt(expense);
+  document.getElementById('cf-balance').innerHTML   = `<span class="${balCls}">${fmt(balance)}</span>`;
+
+  // Expense categories
+  const expCats = {};
+  monthCFs.filter(c=>c.type==='expense').forEach(c => { expCats[c.cat]=(expCats[c.cat]||0)+c.amount; });
+  const sortedCats = Object.entries(expCats).sort((a,b)=>b[1]-a[1]);
+  const totalExp = expense || 1;
+  document.getElementById('expense-cats').innerHTML = sortedCats.map(([cat,amt]) => {
+    const p = (amt/totalExp*100).toFixed(0);
+    return `<div class="alloc-row">
+      <div class="alloc-header">
+        <span style="color:var(--text2);font-size:12px">${CAT_ICONS[cat]||'📌'} ${cat}</span>
+        <span style="color:var(--text3);font-size:12px">${fmt(amt)} (${p}%)</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${p}%;background:var(--red)"></div></div>
+    </div>`;
+  }).join('') || '<div class="empty">本月尚無支出</div>';
+
+  // Monthly list
+  const sorted = [...monthCFs].sort((a,b)=>b.date.localeCompare(a.date));
+  document.getElementById('cf-list').innerHTML = sorted.map(c => {
+    const isInc = c.type==='income';
+    return `<div class="cf-row">
+      <div class="cf-icon" style="background:${isInc?'#1D9E7522':'#D85A3022'}">${CAT_ICONS[c.cat]||'📌'}</div>
+      <div class="cf-info">
+        <div class="cf-desc">${c.desc}</div>
+        <div class="cf-cat">${c.cat}</div>
+      </div>
+      <div class="cf-right">
+        <div class="cf-amount ${isInc?'pos':'neg'}">${isInc?'+':'-'}${fmt(c.amount)}</div>
+        <div class="cf-date">${c.date}</div>
+      </div>
+      <div style="margin-left:6px"><button class="btn-danger" onclick="removeCF(${c.id})">刪</button></div>
+    </div>`;
+  }).join('') || '<div class="empty">本月尚無紀錄<br><small style="color:var(--text3)">點右上「＋ 新增」開始記帳</small></div>';
+
+  renderBalanceChart();
+}
+
+function renderBalanceChart() {
+  const months = [];
+  for (let i=5; i>=0; i--) {
+    const d = new Date(currentMonth);
+    d.setMonth(d.getMonth()-i);
+    months.push(getMonthKey(d));
+  }
+  const labels = months.map(m => { const p=m.split('-'); return p[1]+'月'; });
+  const data = months.map(m => {
+    const mCFs = cashflows.filter(c=>c.month===m);
+    const inc = mCFs.filter(c=>c.type==='income').reduce((s,c)=>s+c.amount,0);
+    const exp = mCFs.filter(c=>c.type==='expense').reduce((s,c)=>s+c.amount,0);
+    return inc - exp;
+  });
+
+  const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const posColor = '#1D9E75', negColor = '#D85A30';
+  const barColors = data.map(v => v>=0 ? posColor+'bb' : negColor+'bb');
+  const borderColors = data.map(v => v>=0 ? posColor : negColor);
+  const gridColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)';
+  const textColor = isDark ? '#6b6b68' : '#9e9d99';
+
+  if (balanceChart) { balanceChart.destroy(); balanceChart = null; }
+  const ctx = document.getElementById('balance-chart').getContext('2d');
+  balanceChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: barColors,
+        borderColor: borderColors,
+        borderWidth: 1.5,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => fmtShort(ctx.raw) }
+      }},
+      scales: {
+        x: { grid: { display: false }, ticks: { color: textColor, font: { size: 11 } } },
+        y: { grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11 }, callback: v => fmtShort(v) } }
+      }
+    }
+  });
+}
+
+function renderHistory() {
   const typeColor = { add:'#1D9E75', remove:'#D85A30', update:'#185FA5' };
   document.getElementById('history-list').innerHTML = history.slice(0,50).map(h =>
     `<div class="history-row">
       <div class="history-dot" style="background:${typeColor[h.type]||'#888'}"></div>
-      <div class="history-info">
-        <div class="history-desc">${h.desc}</div>
-        <div class="history-date">${h.date}</div>
-      </div>
+      <div class="history-info"><div class="history-desc">${h.desc}</div><div class="history-date">${h.date}</div></div>
       <div class="history-amount" style="color:${typeColor[h.type]||'var(--text)'}">${h.amount}</div>
     </div>`
   ).join('') || '<div class="empty">尚無紀錄</div>';
 }
 
+function changeMonth(dir) {
+  currentMonth.setMonth(currentMonth.getMonth()+dir);
+  renderCashflow();
+}
+
+// === 現金流 Modal ===
+let cfEditId = null;
+function openCFModal(id=null) {
+  cfEditId = id;
+  selectedCat = '';
+  const today = new Date().toISOString().split('T')[0];
+  if (id) {
+    const c = cashflows.find(x=>x.id===id);
+    setCFType(c.type);
+    document.getElementById('cf-amount').value = c.amount;
+    document.getElementById('cf-desc').value = c.desc;
+    document.getElementById('cf-date').value = c.date;
+    selectedCat = c.cat;
+    document.getElementById('cf-modal-title').textContent = '編輯收支';
+    document.getElementById('cf-save-btn').textContent = '儲存';
+  } else {
+    setCFType('income');
+    document.getElementById('cf-amount').value = '';
+    document.getElementById('cf-desc').value = '';
+    document.getElementById('cf-date').value = today;
+    document.getElementById('cf-modal-title').textContent = '新增收支';
+    document.getElementById('cf-save-btn').textContent = '新增';
+  }
+  renderCatPills();
+  document.getElementById('cf-modal').classList.add('open');
+}
+
+function closeCFModal(e) {
+  if (!e || e.target===document.getElementById('cf-modal'))
+    document.getElementById('cf-modal').classList.remove('open');
+}
+
+function setCFType(type) {
+  selectedCFType = type;
+  selectedCat = '';
+  document.getElementById('cf-type-income').classList.toggle('active', type==='income');
+  document.getElementById('cf-type-expense').classList.toggle('active', type==='expense');
+  renderCatPills();
+}
+
+function renderCatPills() {
+  const cats = selectedCFType==='income' ? INCOME_CATS : EXPENSE_CATS;
+  document.getElementById('cat-pills').innerHTML = cats.map(c =>
+    `<div class="cat-pill${selectedCat===c?' selected':''}" onclick="selectCat('${c}')">${CAT_ICONS[c]||''} ${c}</div>`
+  ).join('');
+}
+
+function selectCat(cat) {
+  selectedCat = cat;
+  renderCatPills();
+}
+
+async function saveCF() {
+  const amount = parseFloat(document.getElementById('cf-amount').value)||0;
+  const desc   = document.getElementById('cf-desc').value.trim();
+  const date   = document.getElementById('cf-date').value;
+  if (!amount) { toast('請輸入金額'); return; }
+  if (!desc)   { toast('請填寫描述'); return; }
+  if (!selectedCat) { toast('請選擇分類'); return; }
+
+  const month = date.substring(0,7);
+  if (cfEditId) {
+    const c = cashflows.find(x=>x.id===cfEditId);
+    Object.assign(c, { type:selectedCFType, amount, desc, cat:selectedCat, date, month });
+  } else {
+    cashflows.push({ id:nextCFId++, type:selectedCFType, amount, desc, cat:selectedCat, date, month });
+  }
+
+  document.getElementById('cf-modal').classList.remove('open');
+  renderCashflow();
+
+  const btn = document.getElementById('cf-save-btn');
+  btn.textContent='同步中...'; btn.disabled=true;
+  try {
+    await apiSave('saveCashflows', cashflows);
+    toast('✓ 已同步至 Sheets');
+  } catch(e) { toast('記錄成功，但同步失敗'); }
+  btn.textContent='新增'; btn.disabled=false;
+}
+
+async function removeCF(id) {
+  if (!confirm('確定刪除這筆紀錄？')) return;
+  cashflows = cashflows.filter(c=>c.id!==id);
+  renderCashflow();
+  try { await apiSave('saveCashflows', cashflows); toast('✓ 已刪除並同步'); }
+  catch(e) { toast('刪除成功，但同步失敗'); }
+}
+
+// === 資產 ===
 async function addAsset() {
   const name = document.getElementById('a-name').value.trim();
   if (!name) { toast('請填寫資產名稱'); return; }
-  const type = document.getElementById('a-type').value;
+  const type     = document.getElementById('a-type').value;
   const currency = document.getElementById('a-currency').value;
-  const cost = parseFloat(document.getElementById('a-cost').value) || 0;
-  const value = parseFloat(document.getElementById('a-value').value) || 0;
-  const note = document.getElementById('a-note').value.trim();
-  const today = new Date().toISOString().split('T')[0];
-
-  assets.push({ id: nextId++, name, type, currency, cost, value, note, date: today });
-  history.unshift({ date: today, desc: `新增：${name}`, amount: `+ ${currency} ${cost.toLocaleString()}`, type: 'add' });
+  const cost     = parseFloat(document.getElementById('a-cost').value)||0;
+  const value    = parseFloat(document.getElementById('a-value').value)||0;
+  const note     = document.getElementById('a-note').value.trim();
+  const today    = new Date().toISOString().split('T')[0];
+  assets.push({ id:nextId++, name, type, currency, cost, value, note, date:today });
+  history.unshift({ date:today, desc:`新增：${name}`, amount:`+ ${currency} ${cost.toLocaleString()}`, type:'add' });
   renderAll();
-
-  document.getElementById('a-name').value = '';
-  document.getElementById('a-cost').value = '';
-  document.getElementById('a-value').value = '';
-  document.getElementById('a-note').value = '';
-
+  ['a-name','a-cost','a-value','a-note'].forEach(id => document.getElementById(id).value='');
   const btn = document.getElementById('add-btn');
-  btn.textContent = '同步中...'; btn.disabled = true;
+  btn.textContent='同步中...'; btn.disabled=true;
   try {
     await apiSave('saveAssets', assets);
     await apiSave('saveHistory', history);
-    toast('✓ 已新增並同步至 Sheets');
+    toast('✓ 已新增並同步');
     switchTab('assets', document.querySelectorAll('.tab')[1]);
-  } catch(e) {
-    toast('新增成功，但同步失敗');
-  }
-  btn.textContent = '新增資產'; btn.disabled = false;
+  } catch(e) { toast('新增成功，但同步失敗'); }
+  btn.textContent='新增資產'; btn.disabled=false;
 }
 
 async function removeAsset(id) {
-  const a = assets.find(x => x.id === id);
+  const a = assets.find(x=>x.id===id);
   if (!confirm(`確定要刪除「${a.name}」？`)) return;
   const today = new Date().toISOString().split('T')[0];
-  history.unshift({ date: today, desc: `刪除：${a.name}`, amount: `- ${a.currency} ${a.value.toLocaleString()}`, type: 'remove' });
-  assets = assets.filter(x => x.id !== id);
+  history.unshift({ date:today, desc:`刪除：${a.name}`, amount:`- ${a.currency} ${a.value.toLocaleString()}`, type:'remove' });
+  assets = assets.filter(x=>x.id!==id);
   renderAll();
-  try {
-    await apiSave('saveAssets', assets);
-    await apiSave('saveHistory', history);
-    toast('✓ 已刪除並同步');
-  } catch(e) {
-    toast('刪除成功，但同步失敗');
-  }
+  try { await apiSave('saveAssets', assets); await apiSave('saveHistory', history); toast('✓ 已刪除並同步'); }
+  catch(e) { toast('刪除成功，但同步失敗'); }
 }
 
 function openEdit(id) {
-  const a = assets.find(x => x.id === id);
+  const a = assets.find(x=>x.id===id);
   document.getElementById('edit-id').value = id;
-  document.getElementById('edit-name').value = a.name;
-  document.getElementById('edit-cost').value = a.cost;
+  document.getElementById('edit-name').value  = a.name;
+  document.getElementById('edit-cost').value  = a.cost;
   document.getElementById('edit-value').value = a.value;
-  document.getElementById('edit-note').value = a.note || '';
+  document.getElementById('edit-note').value  = a.note||'';
   document.getElementById('modal').classList.add('open');
 }
-
 function closeModal(e) {
-  if (!e || e.target === document.getElementById('modal')) {
+  if (!e || e.target===document.getElementById('modal'))
     document.getElementById('modal').classList.remove('open');
-  }
 }
-
 async function saveEdit() {
   const id = Number(document.getElementById('edit-id').value);
-  const a = assets.find(x => x.id === id);
+  const a  = assets.find(x=>x.id===id);
   a.name  = document.getElementById('edit-name').value.trim();
-  a.cost  = parseFloat(document.getElementById('edit-cost').value) || 0;
-  a.value = parseFloat(document.getElementById('edit-value').value) || 0;
+  a.cost  = parseFloat(document.getElementById('edit-cost').value)||0;
+  a.value = parseFloat(document.getElementById('edit-value').value)||0;
   a.note  = document.getElementById('edit-note').value.trim();
   const today = new Date().toISOString().split('T')[0];
-  history.unshift({ date: today, desc: `更新：${a.name}`, amount: `${a.currency} ${a.value.toLocaleString()}`, type: 'update' });
+  history.unshift({ date:today, desc:`更新：${a.name}`, amount:`${a.currency} ${a.value.toLocaleString()}`, type:'update' });
   document.getElementById('modal').classList.remove('open');
   renderAll();
-
   const btn = document.getElementById('edit-save-btn');
-  btn.textContent = '同步中...'; btn.disabled = true;
-  try {
-    await apiSave('saveAssets', assets);
-    await apiSave('saveHistory', history);
-    toast('✓ 已更新並同步至 Sheets');
-  } catch(e) {
-    toast('更新成功，但同步失敗');
-  }
-  btn.textContent = '儲存'; btn.disabled = false;
+  btn.textContent='同步中...'; btn.disabled=true;
+  try { await apiSave('saveAssets', assets); await apiSave('saveHistory', history); toast('✓ 已更新並同步'); }
+  catch(e) { toast('更新成功，但同步失敗'); }
+  btn.textContent='儲存'; btn.disabled=false;
 }
 
 function calcFX() {
-  const amt = parseFloat(document.getElementById('fx-amount').value) || 0;
+  const amt  = parseFloat(document.getElementById('fx-amount').value)||0;
   const from = document.getElementById('fx-from').value;
-  const to = document.getElementById('fx-to').value;
+  const to   = document.getElementById('fx-to').value;
   const rate = RATES[from][to];
-  document.getElementById('fx-result').textContent = fmt(amt * rate, to);
+  document.getElementById('fx-result').textContent    = fmt(amt*rate, to);
   document.getElementById('fx-rate-note').textContent = `1 ${from} = ${rate.toFixed(4)} ${to}`;
 }
 
 function switchTab(id, btn) {
-  ['overview','assets','add','history','fx'].forEach(t => {
-    document.getElementById('tab-'+t).style.display = t === id ? '' : 'none';
+  ['overview','assets','cashflow','add','history','fx'].forEach(t => {
+    document.getElementById('tab-'+t).style.display = t===id ? '' : 'none';
   });
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  if (id === 'fx') calcFX();
+  if (id==='fx') calcFX();
+  if (id==='cashflow') renderCashflow();
 }
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 loadData();
 </script>
 </body>
