@@ -17,7 +17,7 @@
     --border: rgba(0,0,0,0.1); --border2: rgba(0,0,0,0.2);
     --green: #1D9E75; --blue: #185FA5; --red: #D85A30; --amber: #BA7517; --gray: #5F5E5A;
     --radius: 10px; --radius-lg: 14px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
   }
   @media (prefers-color-scheme: dark) {
     :root {
@@ -28,39 +28,26 @@
   }
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
   body { display: flex; flex-direction: column; max-width: 640px; margin: 0 auto; }
-
-  /* Header */
   .header { padding: 16px 16px 0; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
   .app-title { font-size: 13px; font-weight: 500; color: var(--text3); letter-spacing: 0.04em; }
   .sync-btn { font-size: 12px; color: var(--blue); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; display: flex; align-items: center; gap: 4px; }
   .sync-btn:active { background: var(--bg2); }
-  .sync-icon { width: 14px; height: 14px; display: inline-block; }
   .total-label { font-size: 12px; color: var(--text3); margin-bottom: 2px; }
   .total-value { font-size: 32px; font-weight: 600; color: var(--text); letter-spacing: -0.5px; }
-  .total-pnl { font-size: 13px; margin-top: 2px; }
-
-  /* Tabs */
-  .tabs { display: flex; padding: 12px 16px 0; gap: 0; border-bottom: 0.5px solid var(--border); }
+  .total-pnl { font-size: 13px; margin-top: 2px; min-height: 18px; }
+  .tabs { display: flex; padding: 12px 16px 0; border-bottom: 0.5px solid var(--border); }
   .tab { flex: 1; padding: 8px 4px; font-size: 13px; color: var(--text2); background: none; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.15s; }
   .tab.active { color: var(--text); border-bottom-color: var(--text); font-weight: 500; }
-
-  /* Content */
-  .content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 32px; }
-
-  /* Cards */
+  .content { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 40px; }
   .card { background: var(--bg2); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px; }
   .card-white { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
   .card-title { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.06em; margin-bottom: 10px; text-transform: uppercase; }
-
-  /* Metrics */
   .metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
   .metric { background: var(--bg2); border-radius: var(--radius); padding: 12px 14px; }
   .metric-label { font-size: 11px; color: var(--text3); margin-bottom: 4px; }
   .metric-value { font-size: 20px; font-weight: 600; color: var(--text); }
   .metric-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
-
-  /* Asset rows */
   .asset-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
   .asset-row:last-child { border-bottom: none; padding-bottom: 0; }
   .asset-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
@@ -70,20 +57,17 @@
   .asset-right { text-align: right; flex-shrink: 0; }
   .asset-amount { font-size: 14px; font-weight: 500; color: var(--text); }
   .asset-pnl { font-size: 11px; margin-top: 1px; }
-
-  /* Allocation bars */
   .alloc-row { margin-bottom: 10px; }
   .alloc-header { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 4px; }
   .alloc-name { color: var(--text2); }
   .alloc-pct { color: var(--text3); }
   .bar-bg { height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
   .bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
-
-  /* Form */
   .form-section { margin-bottom: 14px; }
   .form-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: block; }
-  .form-input { width: 100%; padding: 10px 12px; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.15s; }
+  .form-input { width: 100%; padding: 10px 12px; background: var(--bg); border: 0.5px solid var(--border2); border-radius: var(--radius); font-size: 14px; color: var(--text); outline: none; transition: border-color 0.15s; -webkit-appearance: none; }
   .form-input:focus { border-color: var(--blue); }
+  select.form-input { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-color: var(--bg); padding-right: 32px; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
   .btn-primary { width: 100%; padding: 12px; background: var(--text); color: var(--bg); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: opacity 0.15s; margin-top: 4px; }
@@ -91,45 +75,33 @@
   .btn-danger { padding: 6px 10px; background: none; border: 0.5px solid var(--red); color: var(--red); border-radius: 6px; font-size: 11px; cursor: pointer; }
   .btn-edit { padding: 6px 10px; background: none; border: 0.5px solid var(--border2); color: var(--text2); border-radius: 6px; font-size: 11px; cursor: pointer; }
   .btn-actions { display: flex; gap: 6px; flex-shrink: 0; }
-
-  /* History */
   .history-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 0.5px solid var(--border); }
   .history-row:last-child { border-bottom: none; }
   .history-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
-  .history-desc { flex: 1; font-size: 13px; color: var(--text); }
+  .history-info { flex: 1; }
+  .history-desc { font-size: 13px; color: var(--text); }
   .history-date { font-size: 11px; color: var(--text3); margin-top: 2px; }
   .history-amount { font-size: 13px; font-weight: 500; text-align: right; flex-shrink: 0; }
-
-  /* FX */
   .fx-display { font-size: 28px; font-weight: 600; color: var(--text); margin: 8px 0 4px; }
   .fx-rate { font-size: 12px; color: var(--text3); }
   .rate-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
   .rate-item { background: var(--bg3); border-radius: 8px; padding: 10px 12px; }
   .rate-pair { font-size: 11px; color: var(--text3); margin-bottom: 2px; }
   .rate-val { font-size: 16px; font-weight: 600; color: var(--text); }
-
-  /* Toast */
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 10px 20px; border-radius: 20px; font-size: 13px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 999; white-space: nowrap; }
   .toast.show { opacity: 1; }
-
-  /* Loading */
-  .loading { text-align: center; padding: 40px 0; color: var(--text3); font-size: 13px; }
-  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border2); border-top-color: var(--text); border-radius: 50%; animation: spin 0.7s linear infinite; margin-bottom: 8px; }
+  .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--border2); border-top-color: currentColor; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 4px; }
   @keyframes spin { to { transform: rotate(360deg); } }
-
-  .pos { color: var(--green); }
-  .neg { color: var(--red); }
   .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 32px 0; }
-
-  /* Edit modal */
-  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .pos { color: var(--green); } .neg { color: var(--red); }
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 100; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-backdrop.open { opacity: 1; pointer-events: all; }
-  .modal { background: var(--bg); border-radius: 20px 20px 0 0; padding: 20px 16px 40px; width: 100%; max-width: 640px; transform: translateY(100%); transition: transform 0.3s ease; }
+  .modal { background: var(--bg); border-radius: 20px 20px 0 0; padding: 20px 16px 48px; width: 100%; max-width: 640px; transform: translateY(100%); transition: transform 0.3s ease; }
   .modal-backdrop.open .modal { transform: translateY(0); }
-  .modal-title { font-size: 16px; font-weight: 600; margin-bottom: 16px; }
-  .modal-close { float: right; background: var(--bg2); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 16px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
-
-  select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M2 4l4 4 4-4' fill='none' stroke='%23999' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .modal-title { font-size: 16px; font-weight: 600; }
+  .modal-close { background: var(--bg2); border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px; color: var(--text2); display: flex; align-items: center; justify-content: center; }
+  .status-bar { font-size: 11px; color: var(--text3); text-align: center; padding: 4px 0 0; min-height: 16px; }
 </style>
 </head>
 <body>
@@ -137,20 +109,13 @@
 <div class="header">
   <div class="header-top">
     <span class="app-title">個人資產管理</span>
-    <button class="sync-btn" onclick="loadData()">
-      <svg class="sync-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M13.5 8A5.5 5.5 0 012.5 8"/>
-        <path d="M2.5 8A5.5 5.5 0 0113.5 8"/>
-        <path d="M11 5.5l2.5 2.5L11 10.5"/>
-        <path d="M5 10.5L2.5 8 5 5.5"/>
-      </svg>
-      同步
-    </button>
+    <button class="sync-btn" onclick="loadData()" id="sync-btn">↻ 同步</button>
   </div>
   <div class="total-label">總資產（TWD）</div>
-  <div class="total-value" id="total-value">載入中...</div>
+  <div class="total-value" id="total-value">—</div>
   <div class="total-pnl" id="total-pnl"></div>
 </div>
+<div class="status-bar" id="status-bar"></div>
 
 <div class="tabs">
   <button class="tab active" onclick="switchTab('overview',this)">總覽</button>
@@ -180,7 +145,7 @@
       <div id="alloc-bars"></div>
     </div>
     <div class="card">
-      <div class="card-title">損益前五名</div>
+      <div class="card-title">損益排行</div>
       <div id="pnl-list"></div>
     </div>
   </div>
@@ -220,26 +185,24 @@
       <div class="form-row form-section">
         <div>
           <label class="form-label">買入成本</label>
-          <input class="form-input" id="a-cost" type="number" placeholder="0">
+          <input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal">
         </div>
         <div>
           <label class="form-label">目前現值</label>
-          <input class="form-input" id="a-value" type="number" placeholder="0">
+          <input class="form-input" id="a-value" type="number" placeholder="0" inputmode="decimal">
         </div>
       </div>
       <div class="form-section">
         <label class="form-label">備註（選填）</label>
         <input class="form-input" id="a-note" placeholder="例：第一銀行定存">
       </div>
-      <button class="btn-primary" onclick="addAsset()">新增資產</button>
+      <button class="btn-primary" id="add-btn" onclick="addAsset()">新增資產</button>
     </div>
   </div>
 
   <!-- History -->
   <div id="tab-history" style="display:none">
-    <div class="card">
-      <div id="history-list"></div>
-    </div>
+    <div class="card"><div id="history-list"></div></div>
   </div>
 
   <!-- FX -->
@@ -249,7 +212,7 @@
       <div class="form-row-3" style="margin-bottom:12px">
         <div>
           <label class="form-label">金額</label>
-          <input class="form-input" id="fx-amount" type="number" value="1000" oninput="calcFX()">
+          <input class="form-input" id="fx-amount" type="number" value="1000" oninput="calcFX()" inputmode="decimal">
         </div>
         <div>
           <label class="form-label">從</label>
@@ -283,8 +246,10 @@
 <!-- Edit Modal -->
 <div class="modal-backdrop" id="modal" onclick="closeModal(event)">
   <div class="modal">
-    <button class="modal-close" onclick="closeModal()">✕</button>
-    <div class="modal-title">編輯資產</div>
+    <div class="modal-header">
+      <div class="modal-title">編輯資產</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
     <input type="hidden" id="edit-id">
     <div class="form-section">
       <label class="form-label">資產名稱</label>
@@ -293,18 +258,18 @@
     <div class="form-row form-section">
       <div>
         <label class="form-label">買入成本</label>
-        <input class="form-input" id="edit-cost" type="number">
+        <input class="form-input" id="edit-cost" type="number" inputmode="decimal">
       </div>
       <div>
         <label class="form-label">目前現值</label>
-        <input class="form-input" id="edit-value" type="number">
+        <input class="form-input" id="edit-value" type="number" inputmode="decimal">
       </div>
     </div>
     <div class="form-section">
       <label class="form-label">備註</label>
       <input class="form-input" id="edit-note">
     </div>
-    <button class="btn-primary" onclick="saveEdit()">儲存</button>
+    <button class="btn-primary" id="edit-save-btn" onclick="saveEdit()">儲存</button>
   </div>
 </div>
 
@@ -317,7 +282,41 @@ const COLORS = { cash:'#1D9E75', stock:'#185FA5', crypto:'#BA7517', realestate:'
 const ICONS  = { cash:'💰', stock:'📈', crypto:'🪙', realestate:'🏠', other:'📊' };
 const LABELS = { cash:'現金／存款', stock:'股票／ETF', crypto:'加密貨幣', realestate:'房地產', other:'其他投資' };
 
-let assets = [], history = [], nextId = 1;
+let assets = [], history = [], nextId = 1, cbCounter = 0;
+
+// JSONP 呼叫：繞過 CORS 限制
+function jsonp(params) {
+  return new Promise((resolve, reject) => {
+    const cbName = '__cb' + (cbCounter++);
+    const timeout = setTimeout(() => {
+      delete window[cbName];
+      reject(new Error('timeout'));
+    }, 15000);
+
+    window[cbName] = (data) => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      const el = document.getElementById('_jsonp_' + cbName);
+      if (el) el.remove();
+      resolve(data);
+    };
+
+    const url = new URL(API);
+    url.searchParams.set('callback', cbName);
+    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+
+    const script = document.createElement('script');
+    script.id = '_jsonp_' + cbName;
+    script.src = url.toString();
+    script.onerror = () => {
+      clearTimeout(timeout);
+      delete window[cbName];
+      script.remove();
+      reject(new Error('network error'));
+    };
+    document.head.appendChild(script);
+  });
+}
 
 function toTWD(amount, currency) { return amount * RATES[currency].TWD; }
 
@@ -330,46 +329,42 @@ function fmt(n, currency='TWD') {
   return n.toLocaleString();
 }
 
-function toast(msg) {
+function setStatus(msg) { document.getElementById('status-bar').textContent = msg; }
+
+function toast(msg, duration=2200) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
-}
-
-async function apiCall(params) {
-  const url = new URL(API);
-  Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
-  const res = await fetch(url.toString());
-  return res.json();
+  setTimeout(() => el.classList.remove('show'), duration);
 }
 
 async function loadData() {
-  document.getElementById('total-value').textContent = '同步中...';
+  document.getElementById('sync-btn').textContent = '同步中...';
+  setStatus('');
   try {
-    const data = await apiCall({ action: 'getAll' });
+    const data = await jsonp({ action: 'getAll' });
+    if (data.error) throw new Error(data.error);
     assets = (data.assets || []).map(a => ({
-      ...a,
-      id: Number(a.id),
-      cost: Number(a.cost),
-      value: Number(a.value)
+      ...a, id: Number(a.id), cost: Number(a.cost), value: Number(a.value)
     }));
     history = data.history || [];
     nextId = assets.length ? Math.max(...assets.map(a => a.id)) + 1 : 1;
     renderAll();
+    const now = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+    setStatus('上次同步：' + now);
     toast('已同步');
   } catch(e) {
     toast('同步失敗，請檢查網路');
-    document.getElementById('total-value').textContent = '—';
+    setStatus('同步失敗');
   }
+  document.getElementById('sync-btn').textContent = '↻ 同步';
 }
 
-async function saveAssets() {
-  await apiCall({ action: 'saveAssets', data: JSON.stringify(assets) });
-}
-
-async function saveHistory() {
-  await apiCall({ action: 'saveHistory', data: JSON.stringify(history) });
+async function apiSave(action, data) {
+  const encoded = encodeURIComponent(JSON.stringify(data));
+  const result = await jsonp({ action, data: encoded });
+  if (result.error) throw new Error(result.error);
+  return result;
 }
 
 function renderAll() {
@@ -386,10 +381,9 @@ function renderAll() {
   document.getElementById('m-pnl').innerHTML = `<span class="${cls}">${sign}${fmt(pnl)}</span>`;
   document.getElementById('m-pnl-pct').innerHTML = `<span class="${cls}">${sign}${pct}%</span>`;
 
-  // Allocation bars
   const byType = {};
   assets.forEach(a => { byType[a.type] = (byType[a.type]||0) + toTWD(a.value, a.currency); });
-  const sorted = Object.entries(byType).sort((a,b)=>b[1]-a[1]);
+  const sorted = Object.entries(byType).sort((a,b) => b[1]-a[1]);
   document.getElementById('alloc-bars').innerHTML = sorted.map(([t,v]) => {
     const p = totalTWD > 0 ? (v/totalTWD*100).toFixed(1) : 0;
     return `<div class="alloc-row">
@@ -398,7 +392,6 @@ function renderAll() {
     </div>`;
   }).join('') || '<div class="empty">尚無資產</div>';
 
-  // PnL list
   const pnlList = assets.map(a => ({
     name: a.name,
     pnl: toTWD(a.value - a.cost, a.currency),
@@ -408,14 +401,10 @@ function renderAll() {
     const s = a.pnl>=0?'+':''; const c = a.pnl>=0?'pos':'neg';
     return `<div class="asset-row">
       <div class="asset-info"><div class="asset-name">${a.name}</div></div>
-      <div class="asset-right">
-        <div class="asset-amount ${c}">${s}${fmt(a.pnl)}</div>
-        <div class="asset-pnl ${c}">${s}${a.pct}%</div>
-      </div>
+      <div class="asset-right"><div class="asset-amount ${c}">${s}${fmt(a.pnl)}</div><div class="asset-pnl ${c}">${s}${a.pct}%</div></div>
     </div>`;
   }).join('') || '<div class="empty">尚無資產</div>';
 
-  // Asset list
   document.getElementById('asset-list').innerHTML = assets.map(a => {
     const pnl = a.value - a.cost;
     const pct = a.cost > 0 ? ((pnl/a.cost)*100).toFixed(1) : '0.0';
@@ -427,7 +416,7 @@ function renderAll() {
           <div class="asset-name">${a.name}</div>
           <div class="asset-sub">${LABELS[a.type]} · ${a.currency}${a.note ? ' · '+a.note : ''}</div>
         </div>
-        <div class="asset-right" style="margin-right:10px">
+        <div class="asset-right" style="margin-right:8px">
           <div class="asset-amount">${fmt(a.value, a.currency)}</div>
           <div class="asset-pnl ${c}">${s}${fmt(pnl, a.currency)} (${s}${pct}%)</div>
         </div>
@@ -439,12 +428,11 @@ function renderAll() {
     </div>`;
   }).join('') || '<div class="empty">尚未新增任何資產</div>';
 
-  // History
-  const typeColor = { add: '#1D9E75', remove: '#D85A30', update: '#185FA5' };
-  document.getElementById('history-list').innerHTML = (history.length ? history : []).slice(0,50).map(h =>
+  const typeColor = { add:'#1D9E75', remove:'#D85A30', update:'#185FA5' };
+  document.getElementById('history-list').innerHTML = history.slice(0,50).map(h =>
     `<div class="history-row">
       <div class="history-dot" style="background:${typeColor[h.type]||'#888'}"></div>
-      <div>
+      <div class="history-info">
         <div class="history-desc">${h.desc}</div>
         <div class="history-date">${h.date}</div>
       </div>
@@ -455,25 +443,34 @@ function renderAll() {
 
 async function addAsset() {
   const name = document.getElementById('a-name').value.trim();
+  if (!name) { toast('請填寫資產名稱'); return; }
   const type = document.getElementById('a-type').value;
   const currency = document.getElementById('a-currency').value;
   const cost = parseFloat(document.getElementById('a-cost').value) || 0;
   const value = parseFloat(document.getElementById('a-value').value) || 0;
   const note = document.getElementById('a-note').value.trim();
-  if (!name) { toast('請填寫資產名稱'); return; }
   const today = new Date().toISOString().split('T')[0];
-  const asset = { id: nextId++, name, type, currency, cost, value, note, date: today };
-  assets.push(asset);
+
+  assets.push({ id: nextId++, name, type, currency, cost, value, note, date: today });
   history.unshift({ date: today, desc: `新增：${name}`, amount: `+ ${currency} ${cost.toLocaleString()}`, type: 'add' });
   renderAll();
+
   document.getElementById('a-name').value = '';
   document.getElementById('a-cost').value = '';
   document.getElementById('a-value').value = '';
   document.getElementById('a-note').value = '';
-  toast('儲存中...');
-  await Promise.all([saveAssets(), saveHistory()]);
-  toast('已新增並同步');
-  switchTab('assets', document.querySelectorAll('.tab')[1]);
+
+  const btn = document.getElementById('add-btn');
+  btn.textContent = '同步中...'; btn.disabled = true;
+  try {
+    await apiSave('saveAssets', assets);
+    await apiSave('saveHistory', history);
+    toast('✓ 已新增並同步至 Sheets');
+    switchTab('assets', document.querySelectorAll('.tab')[1]);
+  } catch(e) {
+    toast('新增成功，但同步失敗');
+  }
+  btn.textContent = '新增資產'; btn.disabled = false;
 }
 
 async function removeAsset(id) {
@@ -483,9 +480,13 @@ async function removeAsset(id) {
   history.unshift({ date: today, desc: `刪除：${a.name}`, amount: `- ${a.currency} ${a.value.toLocaleString()}`, type: 'remove' });
   assets = assets.filter(x => x.id !== id);
   renderAll();
-  toast('儲存中...');
-  await Promise.all([saveAssets(), saveHistory()]);
-  toast('已刪除並同步');
+  try {
+    await apiSave('saveAssets', assets);
+    await apiSave('saveHistory', history);
+    toast('✓ 已刪除並同步');
+  } catch(e) {
+    toast('刪除成功，但同步失敗');
+  }
 }
 
 function openEdit(id) {
@@ -507,17 +508,25 @@ function closeModal(e) {
 async function saveEdit() {
   const id = Number(document.getElementById('edit-id').value);
   const a = assets.find(x => x.id === id);
-  a.name = document.getElementById('edit-name').value.trim();
-  a.cost = parseFloat(document.getElementById('edit-cost').value) || 0;
+  a.name  = document.getElementById('edit-name').value.trim();
+  a.cost  = parseFloat(document.getElementById('edit-cost').value) || 0;
   a.value = parseFloat(document.getElementById('edit-value').value) || 0;
-  a.note = document.getElementById('edit-note').value.trim();
+  a.note  = document.getElementById('edit-note').value.trim();
   const today = new Date().toISOString().split('T')[0];
   history.unshift({ date: today, desc: `更新：${a.name}`, amount: `${a.currency} ${a.value.toLocaleString()}`, type: 'update' });
   document.getElementById('modal').classList.remove('open');
   renderAll();
-  toast('儲存中...');
-  await Promise.all([saveAssets(), saveHistory()]);
-  toast('已更新並同步');
+
+  const btn = document.getElementById('edit-save-btn');
+  btn.textContent = '同步中...'; btn.disabled = true;
+  try {
+    await apiSave('saveAssets', assets);
+    await apiSave('saveHistory', history);
+    toast('✓ 已更新並同步至 Sheets');
+  } catch(e) {
+    toast('更新成功，但同步失敗');
+  }
+  btn.textContent = '儲存'; btn.disabled = false;
 }
 
 function calcFX() {
@@ -538,13 +547,11 @@ function switchTab(id, btn) {
   if (id === 'fx') calcFX();
 }
 
-// Init
-loadData();
-
-// PWA Service Worker registration
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
+
+loadData();
 </script>
 </body>
 </html>
