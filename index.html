@@ -165,6 +165,7 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
   <button class="tab active" onclick="switchTab('overview',this)">總覽</button>
   <button class="tab" onclick="switchTab('assets',this)">資產</button>
   <button class="tab" onclick="switchTab('cashflow',this)">現金流</button>
+  <button class="tab" onclick="switchTab('plans',this)">計畫</button>
   <button class="tab" onclick="switchTab('history',this)">紀錄</button>
   <button class="tab" onclick="switchTab('fx',this)">換算</button>
 </div>
@@ -179,6 +180,10 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
     </div>
     <div class="card"><div class="card-title">資產配置</div><div id="alloc-bars"></div></div>
     <div class="card"><div class="card-title">損益排行</div><div id="pnl-list"></div></div>
+    <div class="card" id="plan-summary-card" style="display:none">
+      <div class="card-title">計畫進度</div>
+      <div id="plan-summary"></div>
+    </div>
   </div>
 
   <!-- 資產 -->
@@ -224,6 +229,15 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
       </div>
       <div id="cf-list"></div>
     </div>
+  </div>
+
+  <!-- 計畫 -->
+  <div id="tab-plans" style="display:none">
+    <div class="section-header" style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:500;color:var(--text)">我的財務計畫</div>
+      <button class="btn-edit" onclick="openPlanModal()">＋ 新增計畫</button>
+    </div>
+    <div id="plans-list"></div>
   </div>
 
   <!-- 紀錄 -->
@@ -396,6 +410,51 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
   </div>
 </div>
 
+<!-- 新增/編輯計畫 Modal -->
+<div class="modal-backdrop" id="plan-modal" onclick="closePlanModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="plan-modal-title">新增計畫</div>
+      <button class="modal-close" onclick="closePlanModal()">✕</button>
+    </div>
+    <div class="form-section">
+      <label class="form-label">計畫名稱</label>
+      <input class="form-input" id="plan-name" placeholder="例：退休計畫、購屋頭期款">
+    </div>
+    <div class="form-section">
+      <label class="form-label">計畫類型</label>
+      <select class="form-input" id="plan-type">
+        <option value="asset">總資產目標</option>
+        <option value="cashflow">每月現金流目標</option>
+        <option value="retire">退休目標</option>
+        <option value="specific">特定資產目標</option>
+        <option value="emergency">緊急備用金</option>
+      </select>
+    </div>
+    <div class="form-row form-section">
+      <div>
+        <label class="form-label">目標金額（TWD）</label>
+        <input class="form-input" id="plan-target" type="number" placeholder="0" inputmode="decimal">
+      </div>
+      <div>
+        <label class="form-label">目標日期（選填）</label>
+        <input class="form-input" id="plan-date" type="month">
+      </div>
+    </div>
+    <div class="form-section">
+      <label class="form-label">目前進度（選填，留空自動計算）</label>
+      <input class="form-input" id="plan-current" type="number" placeholder="0" inputmode="decimal">
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">資產目標留空會自動帶入目前總資產</div>
+    </div>
+    <div class="form-section">
+      <label class="form-label">備註</label>
+      <input class="form-input" id="plan-note" placeholder="選填">
+    </div>
+    <input type="hidden" id="plan-edit-id">
+    <button class="btn-primary" id="plan-save-btn" onclick="savePlan()">新增計畫</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
@@ -410,6 +469,7 @@ const EXPENSE_CATS=['餐飲','交通','購物','娛樂','醫療','住宿','學�
 const CICONS={'薪資':'💼','獎金':'🎁','投資收益':'📈','租金收入':'🏠','副業':'💡','其他收入':'➕','餐飲':'🍜','交通':'🚇','購物':'🛍','娛樂':'🎮','醫療':'💊','住宿':'🏡','學費':'📚','保險':'🛡','訂閱':'📱','其他支出':'📌'};
 
 let assets=[],history=[],cashflows=[],nextId=1,nextCFId=1,cbCounter=0;
+let activeTab='overview';
 let priceCache={};
 let currentMonth=new Date(); currentMonth.setDate(1);
 let selectedCFType='income',selectedCat='';
@@ -478,6 +538,9 @@ async function loadData(silent=false){
     nextCFId=cashflows.length?Math.max(...cashflows.map(c=>c.id))+1:1;
     saveCache();
     renderAll();
+    // 同步後維持原分頁
+    const tabEl=document.querySelector(`.tab[onclick*="'${activeTab}'"]`);
+    if(tabEl) switchTab(activeTab,tabEl);
     const now=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
     setStatus('上次同步：'+now);
     if(!silent) toast('已同步');
@@ -522,7 +585,7 @@ async function fetchAndUpdatePrices(){
   }catch(e){ console.log('price fetch failed',e); }
 }
 
-function renderAll(){renderOverview();renderAssets();renderCashflow();renderHistory()}
+function renderAll(){renderOverview();renderAssets();renderCashflow();renderHistory();renderPlans();renderPlanSummary();}
 
 function renderOverview(){
   const tot=assets.reduce((s,a)=>s+toTWD(a.value,a.currency),0);
@@ -550,14 +613,14 @@ function renderAssets(){
   document.getElementById('asset-list').innerHTML=assets.map(a=>{
     const pnl=a.value-a.cost,pct=a.cost>0?((pnl/a.cost)*100).toFixed(1):'0.0';
     const s=pnl>=0?'+':'',c=pnl>=0?'pos':'neg';
-    const priceInfo=a.ticker&&priceCache[a.ticker]?priceCache[a.ticker]:null;
+    const priceInfo=a.ticker&&priceCache[a.ticker.toUpperCase()]?priceCache[a.ticker.toUpperCase()]:null;
     const changeCl=priceInfo&&priceInfo.change>=0?'pos':'neg';
     const changeStr=priceInfo?`<span class="${changeCl}" style="font-size:10px;margin-left:4px">${priceInfo.change>=0?'+':''}${priceInfo.change.toFixed(2)}%</span>`:'';
     const sharesStr=a.shares&&Number(a.shares)>0?` · ${Number(a.shares).toLocaleString()}股/幣`:'';
     const tickerBadge=a.ticker?`<span style="font-size:10px;background:var(--bg3);color:var(--text3);padding:1px 6px;border-radius:4px;margin-left:4px">${a.ticker}</span>`:'';
     return `<div class="card-white"><div class="asset-row" style="padding:0;border:none">
       <div class="asset-icon" style="background:${ACOLORS[a.type]}22">${AICONS[a.type]}</div>
-      <div class="asset-info"><div class="asset-name">${a.name}${tickerBadge}</div><div class="asset-sub">${ALABELS[a.type]} · ${a.currency}${a.note?' · '+a.note:''}${sharesStr}${changeStr}</div></div>
+      <div class="asset-info"><div class="asset-name">${a.name}${tickerBadge}</div><div class="asset-sub">${ALABELS[a.type]} · ${a.currency}${a.note?' · '+a.note:''}${sharesStr}</div>${priceInfo?`<div style="font-size:11px;margin-top:2px"><span style="color:var(--text2)">現價 ${priceInfo.currency||a.currency} ${priceInfo.price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</span> <span class="${changeCl}">${priceInfo.change>=0?'+':''}${priceInfo.change.toFixed(2)}%</span></div>`:''}</div>
       <div class="asset-right" style="margin-right:8px"><div class="asset-amount">${fmt(a.value,a.currency)}</div><div class="asset-pnl ${c}">${s}${fmt(pnl,a.currency)} (${s}${pct}%)</div></div>
       <div class="btn-actions"><button class="btn-edit" onclick="openAssetModal(${a.id})">編輯</button><button class="btn-danger" onclick="removeAsset(${a.id})">刪除</button></div>
     </div></div>`;
@@ -721,20 +784,39 @@ async function onTickerInput(){
   if(!ticker||ticker.length<2){toast('請填寫股票代碼');return}
   document.getElementById('preview-price').textContent='最新報價：抓取中...';
   document.getElementById('price-preview').style.display='';
+  const CRYPTO_LIST=['BTC','ETH','BNB','SOL','USDT','XRP','ADA','DOGE','DOT','MATIC','AVAX','LINK','UNI','LTC'];
+  const isCrypto=CRYPTO_LIST.includes(ticker);
   try{
-    const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker]))});
-    if(data.prices&&data.prices[ticker]){
-      tickerPrice=data.prices[ticker].price;
-      tickerPriceCurrency=data.prices[ticker].currency||'USD';
-      document.getElementById('preview-price').textContent=`最新報價：${tickerPriceCurrency} ${tickerPrice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}（15分鐘延遲）`;
+    let price=null, priceCur=null, label='';
+    if(isCrypto){
+      // CoinGecko direct fetch via Apps Script
+      const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker]))});
+      if(data.prices&&data.prices[ticker]){
+        price=data.prices[ticker].price;
+        priceCur='USD';
+        label=`最新報價：USD ${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4})}`;
+      }
+    } else {
+      // Stocks via Apps Script (GOOGLEFINANCE)
+      const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker]))});
+      if(data.prices&&data.prices[ticker]){
+        price=data.prices[ticker].price;
+        priceCur=data.prices[ticker].currency||'USD';
+        label=`最新報價：${priceCur} ${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}（15分鐘延遲）`;
+      }
+    }
+    if(price){
+      tickerPrice=price;
+      tickerPriceCurrency=priceCur;
+      document.getElementById('preview-price').textContent=label;
       onSharesInput();
     } else {
       document.getElementById('preview-price').textContent='找不到此代碼，請確認格式';
-      tickerPrice=null;
+      tickerPrice=null; tickerPriceCurrency=null;
     }
   }catch(e){
     document.getElementById('preview-price').textContent='網路錯誤，無法取得報價';
-    tickerPrice=null;
+    tickerPrice=null; tickerPriceCurrency=null;
   }
 }
 
@@ -952,11 +1034,165 @@ function calcFX(){
 }
 
 function switchTab(id,btn){
-  ['overview','assets','cashflow','history','fx'].forEach(t=>{document.getElementById('tab-'+t).style.display=t===id?'':'none'});
+  activeTab=id;
+  ['overview','assets','cashflow','history','fx','plans'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el) el.style.display=t===id?'':'none';
+  });
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   if(btn)btn.classList.add('active');
+  else document.querySelectorAll('.tab').forEach(t=>{if(t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+id+"'"))t.classList.add('active')});
   if(id==='fx')calcFX();
   if(id==='cashflow')renderCashflow();
+  if(id==='plans')renderPlans();
+}
+
+// ── Plans ──
+const PLAN_TYPES={asset:'總資產目標',cashflow:'每月現金流目標',retire:'退休目標',specific:'特定資產目標',emergency:'緊急備用金'};
+const PLAN_ICONS={asset:'🎯',cashflow:'💸',retire:'🏖',specific:'🏠',emergency:'🛡'};
+let plans=JSON.parse(localStorage.getItem('cf_plans')||'[]');
+let planEditId=null;
+
+function savePlansLocal(){localStorage.setItem('cf_plans',JSON.stringify(plans));}
+
+function openPlanModal(id=null){
+  planEditId=id;
+  if(id){
+    const p=plans.find(x=>x.id===id);
+    document.getElementById('plan-modal-title').textContent='編輯計畫';
+    document.getElementById('plan-save-btn').textContent='儲存';
+    document.getElementById('plan-name').value=p.name;
+    document.getElementById('plan-type').value=p.type;
+    document.getElementById('plan-target').value=p.target;
+    document.getElementById('plan-date').value=p.date||'';
+    document.getElementById('plan-current').value=p.current||'';
+    document.getElementById('plan-note').value=p.note||'';
+  } else {
+    document.getElementById('plan-modal-title').textContent='新增計畫';
+    document.getElementById('plan-save-btn').textContent='新增計畫';
+    ['plan-name','plan-target','plan-date','plan-current','plan-note'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('plan-type').value='asset';
+  }
+  document.getElementById('plan-modal').classList.add('open');
+}
+function closePlanModal(e){if(!e||e.target===document.getElementById('plan-modal'))document.getElementById('plan-modal').classList.remove('open')}
+
+function savePlan(){
+  const name=document.getElementById('plan-name').value.trim();
+  const type=document.getElementById('plan-type').value;
+  const target=parseFloat(document.getElementById('plan-target').value)||0;
+  const date=document.getElementById('plan-date').value;
+  const current=document.getElementById('plan-current').value.trim();
+  const note=document.getElementById('plan-note').value.trim();
+  if(!name){toast('請填寫計畫名稱');return}
+  if(!target){toast('請填寫目標金額');return}
+  if(planEditId){
+    const p=plans.find(x=>x.id===planEditId);
+    Object.assign(p,{name,type,target,date,current,note});
+  } else {
+    plans.push({id:Date.now(),name,type,target,date,current,note,created:localDate()});
+  }
+  savePlansLocal();
+  document.getElementById('plan-modal').classList.remove('open');
+  renderPlans();
+  toast('✓ 計畫已儲存');
+}
+
+function removePlan(id){
+  if(!confirm('確定要刪除這個計畫？')) return;
+  plans=plans.filter(x=>x.id!==id);
+  savePlansLocal();
+  renderPlans();
+  toast('已刪除');
+}
+
+function renderPlanSummary(){
+  const el=document.getElementById('plan-summary');
+  const card=document.getElementById('plan-summary-card');
+  if(!el||!plans.length){if(card)card.style.display='none';return;}
+  const totalTWD=assets.reduce((s,a)=>s+toTWD(a.value,a.currency),0);
+  card.style.display='';
+  el.innerHTML=plans.slice(0,3).map(p=>{
+    let current=p.current?Number(p.current):0;
+    if(!p.current&&(p.type==='asset'||p.type==='retire'||p.type==='emergency')) current=totalTWD;
+    const target=Number(p.target);
+    const pct=target>0?Math.min(100,Math.round(current/target*100)):0;
+    const done=current>=target;
+    const barColor=done?'var(--green)':(pct>=70?'var(--amber)':'var(--blue)');
+    return `<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+        <span style="color:var(--text2)">${PLAN_ICONS[p.type]||'🎯'} ${p.name}</span>
+        <span style="color:var(--text3)">${pct}%</span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderPlans(){
+  const totalTWD=assets.reduce((s,a)=>s+toTWD(a.value,a.currency),0);
+  const now=new Date();
+  const el=document.getElementById('plans-list');
+  if(!el) return;
+  if(!plans.length){
+    el.innerHTML='<div class="empty">尚未設定任何計畫<br><small style="color:var(--text3)">點右上「＋ 新增計畫」開始規劃</small></div>';
+    return;
+  }
+  el.innerHTML=plans.map(p=>{
+    // Determine current value
+    let current=p.current?Number(p.current):0;
+    if(!p.current){
+      if(p.type==='asset'||p.type==='retire'||p.type==='emergency') current=totalTWD;
+    }
+    const target=Number(p.target);
+    const pct=target>0?Math.min(100,Math.round(current/target*100)):0;
+    const done=current>=target;
+    const barColor=done?'var(--green)':(pct>=70?'var(--amber)':'var(--blue)');
+    const badgeCl=done?'badge-green':(pct>=70?'badge-amber':'badge-red');
+    const badgeTxt=done?'達標 ✓':pct+'%';
+
+    // Time remaining
+    let timeStr='';
+    if(p.date){
+      const target_d=new Date(p.date+'-01');
+      const diffMs=target_d-now;
+      const diffM=Math.round(diffMs/(1000*60*60*24*30));
+      if(diffM<0) timeStr='<span style="color:var(--red);font-size:11px">已逾期</span>';
+      else if(diffM===0) timeStr='<span style="color:var(--amber);font-size:11px">本月到期</span>';
+      else timeStr=`<span style="color:var(--text3);font-size:11px">還有 ${diffM} 個月（${p.date}）</span>`;
+    }
+
+    // Monthly required savings
+    let monthlyStr='';
+    if(p.date&&!done){
+      const target_d=new Date(p.date+'-01');
+      const diffM=Math.max(1,Math.round((target_d-now)/(1000*60*60*24*30)));
+      const needed=(target-current)/diffM;
+      if(needed>0) monthlyStr=`<div style="font-size:11px;color:var(--text3);margin-top:3px">每月需存入 <span style="color:var(--text);font-weight:500">${fmt(needed)}</span></div>`;
+    }
+
+    return `<div class="goal-card" style="margin-bottom:10px">
+      <div class="goal-header">
+        <div style="flex:1">
+          <div style="display:flex;align-items:center;gap:6px">
+            <span style="font-size:16px">${PLAN_ICONS[p.type]||'🎯'}</span>
+            <div class="goal-title">${p.name}</div>
+            <span class="goal-badge ${badgeCl}" style="font-size:10px">${badgeTxt}</span>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${PLAN_TYPES[p.type]} · 目標 ${fmt(target)}</div>
+          ${timeStr?'<div style="margin-top:2px">'+timeStr+'</div>':''}
+          ${monthlyStr}
+        </div>
+        <div class="btn-actions" style="flex-shrink:0;align-self:flex-start">
+          <button class="btn-edit" onclick="openPlanModal(${p.id})">編輯</button>
+          <button class="btn-danger" onclick="removePlan(${p.id})">刪除</button>
+        </div>
+      </div>
+      <div class="goal-bar-bg"><div class="goal-bar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <div class="goal-nums"><span>目前 ${fmt(current)}</span><span>目標 ${fmt(target)}</span></div>
+      ${p.note?`<div style="font-size:11px;color:var(--text3);margin-top:8px;padding-top:8px;border-top:.5px solid var(--border)">${p.note}</div>`:''}
+    </div>`;
+  }).join('');
 }
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
