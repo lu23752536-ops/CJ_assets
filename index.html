@@ -783,11 +783,15 @@ function openAssetModal(id=null){
     document.getElementById('a-note').value=a.note||'';
     onTypeChange();
     if(isStockMode()){
-      document.getElementById('a-cost').value=a.cost||'';
+      // 編輯時還原每股均價：總成本 ÷ 股數
+      const sharesNum=Number(a.shares)||1;
+      const costPerShare=a.cost&&sharesNum>0 ? Math.round((a.cost/sharesNum)*100)/100 : '';
+      document.getElementById('a-cost').value=costPerShare;
       document.getElementById('a-shares').value=a.shares||'';
       document.getElementById('a-ticker').value=a.ticker||'';
       document.getElementById('a-value').value=a.value||'';
       if(a.ticker) onTickerInput();
+      updateCostPreview();
     } else {
       document.getElementById('a-cost-manual').value=a.cost||'';
       document.getElementById('a-value-manual').value=a.value||'';
