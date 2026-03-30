@@ -268,7 +268,7 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
     <div class="form-section"><label class="form-label">資產名稱</label><input class="form-input" id="a-name" placeholder="例：台積電 2330"></div>
     <div class="form-row form-section">
       <div><label class="form-label">類型</label>
-        <select class="form-input" id="a-type">
+        <select class="form-input" id="a-type" onchange="onTypeChange()">
           <option value="cash">現金／存款</option><option value="stock">股票／ETF</option>
           <option value="crypto">加密貨幣</option><option value="realestate">房地產</option><option value="other">其他投資</option>
         </select>
@@ -279,21 +279,43 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
         </select>
       </div>
     </div>
-    <div class="form-row form-section">
-      <div><label class="form-label">買入成本</label><input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal"></div>
-      <div><label class="form-label">目前現值</label><input class="form-input" id="a-value" type="number" placeholder="0" inputmode="decimal"></div>
+    <!-- 股票/加密貨幣模式：代碼 + 數量，自動抓現值 -->
+    <div id="stock-fields" style="display:none">
+      <div class="form-section">
+        <label class="form-label" id="ticker-label">股票代碼</label>
+        <input class="form-input" id="a-ticker" placeholder="例：2330.TW / AAPL / BTC" oninput="onTickerInput()">
+        <div style="font-size:11px;color:var(--text3);margin-top:5px" id="ticker-hint">台股加 .TW｜美股直接輸入｜加密貨幣輸入 BTC / ETH</div>
+      </div>
+      <div class="form-row form-section">
+        <div>
+          <label class="form-label" id="cost-label">買入成本（每股）</label>
+          <input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal">
+        </div>
+        <div>
+          <label class="form-label" id="shares-label">持有數量</label>
+          <input class="form-input" id="a-shares" type="number" placeholder="0" inputmode="decimal" oninput="onSharesInput()">
+        </div>
+      </div>
+      <!-- 現值預覽 -->
+      <div id="price-preview" style="display:none;background:var(--bg2);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:4px">目前現值預覽</div>
+        <div style="font-size:18px;font-weight:600;color:var(--text)" id="preview-value">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px" id="preview-price">最新報價：抓取中...</div>
+      </div>
+      <input type="hidden" id="a-value">
     </div>
+
+    <!-- 現金/其他模式：手動輸入成本和現值 -->
+    <div id="manual-fields">
+      <div class="form-row form-section">
+        <div><label class="form-label">買入成本</label><input class="form-input" id="a-cost-manual" type="number" placeholder="0" inputmode="decimal"></div>
+        <div><label class="form-label">目前現值</label><input class="form-input" id="a-value-manual" type="number" placeholder="0" inputmode="decimal"></div>
+      </div>
+      <input type="hidden" id="a-ticker-hidden" value="">
+      <input type="hidden" id="a-shares-hidden" value="">
+    </div>
+
     <div class="form-section"><label class="form-label">備註（選填）</label><input class="form-input" id="a-note" placeholder="例：第一銀行定存"></div>
-    <div class="form-section">
-      <label class="form-label">股票代碼（選填，用於自動更新報價）</label>
-      <input class="form-input" id="a-ticker" placeholder="例：2330.TW / AAPL / BTC">
-      <div style="font-size:11px;color:var(--text3);margin-top:5px">台股加 .TW｜美股直接輸入｜加密貨幣輸入 BTC / ETH</div>
-    </div>
-    <div class="form-section">
-      <label class="form-label">持有數量（選填，設定後自動計算現值）</label>
-      <input class="form-input" id="a-shares" type="number" placeholder="例：1000（股）或 0.5（顆 BTC）" inputmode="decimal">
-      <div style="font-size:11px;color:var(--text3);margin-top:5px">台股單位為股｜美股為股數｜加密貨幣為幣數</div>
-    </div>
     <button class="btn-primary" id="asset-save-btn" onclick="saveAsset()">新增資產</button>
   </div>
 </div>
@@ -658,8 +680,68 @@ function renderHistory(){
 function changeMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);renderCashflow()}
 
 // === 資產 Modal ===
+const STOCK_TYPES=['stock','crypto'];
+let tickerPrice=null;
+
+function isStockMode(){return STOCK_TYPES.includes(document.getElementById('a-type').value)}
+
+function onTypeChange(){
+  const isStock=isStockMode();
+  document.getElementById('stock-fields').style.display=isStock?'':'none';
+  document.getElementById('manual-fields').style.display=isStock?'none':'';
+  const type=document.getElementById('a-type').value;
+  if(type==='crypto'){
+    document.getElementById('ticker-label').textContent='加密貨幣代碼';
+    document.getElementById('ticker-hint').textContent='輸入 BTC / ETH / SOL 等';
+    document.getElementById('cost-label').textContent='買入幣價（USD）';
+    document.getElementById('shares-label').textContent='持有數量（幣）';
+  } else {
+    document.getElementById('ticker-label').textContent='股票代碼';
+    document.getElementById('ticker-hint').textContent='台股加 .TW（例：2330.TW）｜美股直接輸入（例：AAPL）';
+    document.getElementById('cost-label').textContent='買入成本（每股）';
+    document.getElementById('shares-label').textContent='持有股數';
+  }
+  tickerPrice=null;
+  document.getElementById('price-preview').style.display='none';
+}
+
+async function onTickerInput(){
+  const ticker=document.getElementById('a-ticker').value.trim().toUpperCase();
+  if(!ticker||ticker.length<2) return;
+  document.getElementById('preview-price').textContent='最新報價：抓取中...';
+  document.getElementById('price-preview').style.display='';
+  try{
+    const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker]))});
+    if(data.prices&&data.prices[ticker]){
+      tickerPrice=data.prices[ticker].price;
+      const cur=data.prices[ticker].currency||'USD';
+      document.getElementById('preview-price').textContent=`最新報價：${cur} ${tickerPrice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}（15分鐘延遲）`;
+      onSharesInput();
+    } else {
+      document.getElementById('preview-price').textContent='找不到此代碼，請確認格式';
+      tickerPrice=null;
+    }
+  }catch(e){
+    document.getElementById('preview-price').textContent='網路錯誤，無法取得報價';
+    tickerPrice=null;
+  }
+}
+
+function onSharesInput(){
+  if(!tickerPrice) return;
+  const shares=parseFloat(document.getElementById('a-shares').value)||0;
+  const val=shares*tickerPrice;
+  document.getElementById('preview-value').textContent=
+    document.getElementById('a-currency').value==='TWD'
+      ? fmt(val*RATES.USD.TWD)
+      : fmt(val,'USD');
+  document.getElementById('a-value').value=val;
+}
+
 function openAssetModal(id=null){
   assetEditId=id;
+  tickerPrice=null;
+  document.getElementById('price-preview').style.display='none';
   if(id){
     const a=assets.find(x=>x.id===id);
     document.getElementById('asset-modal-title').textContent='編輯資產';
@@ -667,17 +749,32 @@ function openAssetModal(id=null){
     document.getElementById('a-name').value=a.name;
     document.getElementById('a-type').value=a.type;
     document.getElementById('a-currency').value=a.currency;
-    document.getElementById('a-cost').value=a.cost;
-    document.getElementById('a-value').value=a.value;
     document.getElementById('a-note').value=a.note||'';
-    document.getElementById('a-ticker').value=a.ticker||'';
-    document.getElementById('a-shares').value=a.shares||'';
+    onTypeChange();
+    if(isStockMode()){
+      document.getElementById('a-cost').value=a.cost||'';
+      document.getElementById('a-shares').value=a.shares||'';
+      document.getElementById('a-ticker').value=a.ticker||'';
+      document.getElementById('a-value').value=a.value||'';
+      if(a.ticker) onTickerInput();
+    } else {
+      document.getElementById('a-cost-manual').value=a.cost||'';
+      document.getElementById('a-value-manual').value=a.value||'';
+    }
   } else {
     document.getElementById('asset-modal-title').textContent='新增資產';
     document.getElementById('asset-save-btn').textContent='新增資產';
-    ['a-name','a-cost','a-value','a-note','a-ticker','a-shares'].forEach(i=>document.getElementById(i).value='');
+    document.getElementById('a-name').value='';
+    document.getElementById('a-note').value='';
     document.getElementById('a-type').value='cash';
     document.getElementById('a-currency').value='TWD';
+    document.getElementById('a-cost').value='';
+    document.getElementById('a-shares').value='';
+    document.getElementById('a-ticker').value='';
+    document.getElementById('a-value').value='';
+    document.getElementById('a-cost-manual').value='';
+    document.getElementById('a-value-manual').value='';
+    onTypeChange();
   }
   document.getElementById('asset-modal').classList.add('open');
 }
@@ -688,12 +785,22 @@ async function saveAsset(){
   if(!name){toast('請填寫資產名稱');return}
   const type=document.getElementById('a-type').value;
   const currency=document.getElementById('a-currency').value;
-  const cost=parseFloat(document.getElementById('a-cost').value)||0;
-  const value=parseFloat(document.getElementById('a-value').value)||0;
   const note=document.getElementById('a-note').value.trim();
-  const ticker=document.getElementById('a-ticker').value.trim().toUpperCase();
-  const shares=document.getElementById('a-shares').value.trim();
   const today=localDate();
+  let cost,value,ticker='',shares='';
+  if(isStockMode()){
+    ticker=document.getElementById('a-ticker').value.trim().toUpperCase();
+    shares=document.getElementById('a-shares').value.trim();
+    cost=parseFloat(document.getElementById('a-cost').value)||0;
+    value=parseFloat(document.getElementById('a-value').value)||0;
+    if(!ticker){toast('請填寫股票代碼');return}
+    if(!shares||Number(shares)<=0){toast('請填寫持有數量');return}
+    if(!value&&tickerPrice){value=Number(shares)*tickerPrice;}
+    if(!value){toast('請先等報價載入，或手動在「目前現值」填入金額');return}
+  } else {
+    cost=parseFloat(document.getElementById('a-cost-manual').value)||0;
+    value=parseFloat(document.getElementById('a-value-manual').value)||0;
+  }
   if(assetEditId){
     const a=assets.find(x=>x.id===assetEditId);
     Object.assign(a,{name,type,currency,cost,value,note,ticker,shares});
