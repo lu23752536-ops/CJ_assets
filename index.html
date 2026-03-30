@@ -206,13 +206,13 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
       <div class="metric"><div class="metric-label">支出</div><div class="metric-value neg" id="cf-expense">—</div></div>
       <div class="metric"><div class="metric-label">結餘</div><div class="metric-value" id="cf-balance">—</div></div>
     </div>
-    <!-- 目標 -->
+    <!-- 現金流計畫 -->
     <div class="card">
       <div class="section-header">
-        <div class="card-title" style="margin:0">目標追蹤</div>
-        <button class="btn-edit" onclick="openGoalModal()">設定目標</button>
+        <div class="card-title" style="margin:0">現金流計畫</div>
+        <button class="btn-edit" onclick="switchTab('plans',document.querySelectorAll('.tab')[2])">管理計畫</button>
       </div>
-      <div id="goals-area"></div>
+      <div id="cf-plans-area"></div>
     </div>
     <!-- 走勢圖 -->
     <div class="card">
@@ -423,18 +423,17 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
     </div>
     <div class="form-section">
       <label class="form-label">計畫類型</label>
-      <select class="form-input" id="plan-type">
-        <option value="asset">總資產目標</option>
-        <option value="cashflow">每月現金流目標</option>
-        <option value="retire">退休目標</option>
-        <option value="specific">特定資產目標</option>
-        <option value="emergency">緊急備用金</option>
+      <select class="form-input" id="plan-type" onchange="updatePlanTargetHint()">
+        <option value="asset">資產目標</option>
+        <option value="cashflow">現金流目標</option>
+        <option value="savings">儲蓄目標</option>
       </select>
     </div>
     <div class="form-row form-section">
       <div>
-        <label class="form-label">目標金額（TWD）</label>
+        <label class="form-label" id="plan-target-label">目標金額（TWD）</label>
         <input class="form-input" id="plan-target" type="number" placeholder="0" inputmode="decimal">
+        <div style="font-size:11px;color:var(--text3);margin-top:4px" id="plan-target-hint">例：目標總資產 NT$10,000,000</div>
       </div>
       <div>
         <label class="form-label">目標日期（選填）</label>
@@ -442,9 +441,9 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
       </div>
     </div>
     <div class="form-section">
-      <label class="form-label">目前進度（選填，留空自動計算）</label>
+      <label class="form-label" id="plan-current-label">目前進度（選填，留空自動計算）</label>
       <input class="form-input" id="plan-current" type="number" placeholder="0" inputmode="decimal">
-      <div style="font-size:11px;color:var(--text3);margin-top:4px">資產目標留空會自動帶入目前總資產</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px" id="plan-current-hint">資產／儲蓄目標留空會自動帶入目前總資產</div>
     </div>
     <div class="form-section">
       <label class="form-label">備註</label>
@@ -485,13 +484,13 @@ function loadCache(){
     const c=localStorage.getItem('app_cache');
     if(!c) return false;
     const d=JSON.parse(c);
-    assets=d.assets||[]; history=d.history||[]; cashflows=d.cashflows||[];
+    assets=d.assets||[]; history=d.history||[]; cashflows=d.cashflows||[]; plans=d.plans||[];
     nextId=d.nextId||1; nextCFId=d.nextCFId||1;
     return true;
   }catch(e){return false}
 }
 function saveCache(){
-  try{ localStorage.setItem('app_cache',JSON.stringify({assets,history,cashflows,nextId,nextCFId})); }catch(e){}
+  try{ localStorage.setItem('app_cache',JSON.stringify({assets,history,cashflows,plans,nextId,nextCFId})); }catch(e){}
 }
 
 function jsonp(params){
@@ -534,13 +533,14 @@ async function loadData(silent=false){
     assets=(data.assets||[]).map(a=>({...a,id:Number(a.id),cost:Number(a.cost),value:Number(a.value)}));
     history=data.history||[];
     cashflows=(data.cashflows||[]).map(c=>({...c,id:Number(c.id),amount:Number(c.amount)}));
+    if(data.plans&&data.plans.length) plans=(data.plans||[]).map(p=>({...p,id:Number(p.id),target:Number(p.target)}));
     nextId=assets.length?Math.max(...assets.map(a=>a.id))+1:1;
     nextCFId=cashflows.length?Math.max(...cashflows.map(c=>c.id))+1:1;
     saveCache();
     renderAll();
     // 同步後維持原分頁
     const tabEl=document.querySelector(`.tab[onclick*="'${activeTab}'"]`);
-    if(tabEl) switchTab(activeTab,tabEl);
+    switchTab(activeTab,tabEl||undefined);
     const now=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
     setStatus('上次同步：'+now);
     if(!silent) toast('已同步');
@@ -639,7 +639,7 @@ function renderCashflow(){
   document.getElementById('cf-income').textContent=fmt(income);
   document.getElementById('cf-expense').textContent=fmt(expense);
   document.getElementById('cf-balance').innerHTML=`<span class="${bcl}">${fmt(balance)}</span>`;
-  renderGoals(income,expense,balance);
+  renderCFPlans(income);
   // expense cats
   const ec={};
   mCFs.filter(c=>c.type==='expense').forEach(c=>{ec[c.cat]=(ec[c.cat]||0)+c.amount});
@@ -720,6 +720,36 @@ function renderGoals(income,expense,balance){
     }
   }
   document.getElementById('goals-area').innerHTML=html;
+}
+
+function renderCFPlans(monthIncome){
+  const el=document.getElementById('cf-plans-area');
+  if(!el) return;
+  const cfPlans=plans.filter(p=>p.type==='cashflow');
+  if(!cfPlans.length){
+    el.innerHTML='<div style="text-align:center;color:var(--text3);font-size:12px;padding:12px 0">尚未設定現金流計畫<br>點右上「管理計畫」新增</div>';
+    return;
+  }
+  el.innerHTML=cfPlans.map(p=>{
+    const target=Number(p.target);
+    const current=p.current?Number(p.current):monthIncome;
+    const pct=target>0?Math.min(100,Math.round(current/target*100)):0;
+    const done=current>=target;
+    const barColor=done?'var(--green)':(pct>=70?'var(--amber)':'var(--red)');
+    const badgeCl=done?'badge-green':(pct>=70?'badge-amber':'badge-red');
+    const badgeTxt=done?'達標 ✓':pct+'%';
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:500;color:var(--text)">💸 ${p.name}</span>
+        <span class="goal-badge ${badgeCl}">${badgeTxt}</span>
+      </div>
+      <div class="bar-bg" style="height:8px;margin-bottom:5px"><div class="bar-fill" style="height:8px;width:${pct}%;background:${barColor}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3)">
+        <span>本月收入 ${fmt(current)}</span>
+        <span>目標 ${fmt(target)}</span>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderBalanceChart(){
@@ -1035,6 +1065,7 @@ function calcFX(){
 
 function switchTab(id,btn){
   activeTab=id;
+  location.hash=id;
   ['overview','assets','cashflow','history','fx','plans'].forEach(t=>{
     const el=document.getElementById('tab-'+t);
     if(el) el.style.display=t===id?'':'none';
@@ -1048,12 +1079,15 @@ function switchTab(id,btn){
 }
 
 // ── Plans ──
-const PLAN_TYPES={asset:'總資產目標',cashflow:'每月現金流目標',retire:'退休目標',specific:'特定資產目標',emergency:'緊急備用金'};
-const PLAN_ICONS={asset:'🎯',cashflow:'💸',retire:'🏖',specific:'🏠',emergency:'🛡'};
-let plans=JSON.parse(localStorage.getItem('cf_plans')||'[]');
+const PLAN_TYPES={asset:'資產目標',cashflow:'現金流目標',savings:'儲蓄目標'};
+const PLAN_ICONS={asset:'🎯',cashflow:'💸',savings:'🏦'};
+let plans=[];
 let planEditId=null;
 
-function savePlansLocal(){localStorage.setItem('cf_plans',JSON.stringify(plans));}
+async function savePlansToSheets(){
+  try{ await apiSave('savePlans',plans); saveCache(); }
+  catch(e){ toast('計畫同步失敗'); }
+}
 
 function openPlanModal(id=null){
   planEditId=id;
@@ -1090,20 +1124,40 @@ function savePlan(){
     const p=plans.find(x=>x.id===planEditId);
     Object.assign(p,{name,type,target,date,current,note});
   } else {
-    plans.push({id:Date.now(),name,type,target,date,current,note,created:localDate()});
+    const nextPlanId=(plans.length?Math.max(...plans.map(p=>Number(p.id)||0))+1:1);
+    plans.push({id:nextPlanId,name,type,target,date,current,note,created:localDate()});
   }
-  savePlansLocal();
   document.getElementById('plan-modal').classList.remove('open');
   renderPlans();
-  toast('✓ 計畫已儲存');
+  const btn=document.getElementById('plan-save-btn');
+  btn.textContent='同步中...'; btn.disabled=true;
+  await savePlansToSheets();
+  toast('✓ 計畫已同步');
+  btn.textContent='新增計畫'; btn.disabled=false;
 }
 
 function removePlan(id){
   if(!confirm('確定要刪除這個計畫？')) return;
   plans=plans.filter(x=>x.id!==id);
-  savePlansLocal();
   renderPlans();
-  toast('已刪除');
+  await savePlansToSheets();
+  toast('✓ 已刪除並同步');
+}
+
+function updatePlanTargetHint(){
+  const type=document.getElementById('plan-type').value;
+  const hints={
+    asset:  {target:'例：目標總資產 NT$10,000,000', current:'留空自動帶入目前總資產'},
+    cashflow:{target:'例：目標每月被動收入 NT$50,000', current:'留空自動帶入本月收入'},
+    savings:{target:'例：目標儲蓄 NT$2,000,000',    current:'留空自動帶入目前總資產'},
+  };
+  const h=hints[type]||hints.asset;
+  document.getElementById('plan-target-hint').textContent=h.target;
+  document.getElementById('plan-current-hint').textContent=h.current;
+  document.getElementById('plan-target-label').textContent=
+    type==='cashflow'?'目標每月收入（TWD）':'目標金額（TWD）';
+  document.getElementById('plan-current-label').textContent=
+    type==='cashflow'?'目前每月收入（選填，留空自動計算）':'目前進度（選填，留空自動計算）';
 }
 
 function renderPlanSummary(){
@@ -1138,11 +1192,15 @@ function renderPlans(){
     el.innerHTML='<div class="empty">尚未設定任何計畫<br><small style="color:var(--text3)">點右上「＋ 新增計畫」開始規劃</small></div>';
     return;
   }
+  // 計算本月收入（供現金流計畫用）
+  const thisMonthKey=getMonthKey(new Date());
+  const thisMonthIncome=cashflows.filter(c=>c.month===thisMonthKey&&c.type==='income').reduce((s,c)=>s+c.amount,0);
   el.innerHTML=plans.map(p=>{
-    // Determine current value
+    // Determine current value based on plan type
     let current=p.current?Number(p.current):0;
     if(!p.current){
-      if(p.type==='asset'||p.type==='retire'||p.type==='emergency') current=totalTWD;
+      if(p.type==='cashflow') current=thisMonthIncome;
+      else current=totalTWD; // asset & savings auto-use total assets
     }
     const target=Number(p.target);
     const pct=target>0?Math.min(100,Math.round(current/target*100)):0;
@@ -1196,6 +1254,11 @@ function renderPlans(){
 }
 
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+// Restore tab from URL hash on load
+const initTab=location.hash.replace('#','');
+const validTabs=['overview','assets','cashflow','history','fx','plans'];
+if(initTab&&validTabs.includes(initTab)) activeTab=initTab;
+
 loadData();
 </script>
 </body>
