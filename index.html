@@ -283,8 +283,11 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
     <div id="stock-fields" style="display:none">
       <div class="form-section">
         <label class="form-label" id="ticker-label">股票代碼</label>
-        <input class="form-input" id="a-ticker" placeholder="例：2330.TW / AAPL / BTC" oninput="onTickerInput()">
-        <div style="font-size:11px;color:var(--text3);margin-top:5px" id="ticker-hint">台股加 .TW｜美股直接輸入｜加密貨幣輸入 BTC / ETH</div>
+        <input class="form-input" id="a-ticker" placeholder="例：2330.TW / AAPL / BTC" onblur="onTickerInput()" onkeydown="if(event.key==='Enter'){this.blur()}">
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <div style="font-size:11px;color:var(--text3)" id="ticker-hint">台股加 .TW｜美股直接輸入｜加密貨幣輸入 BTC / ETH</div>
+        <button type="button" onclick="onTickerInput()" style="flex-shrink:0;padding:4px 12px;font-size:12px;background:var(--text);color:var(--bg);border:none;border-radius:6px;cursor:pointer">查詢報價</button>
+      </div>
       </div>
       <div class="form-row form-section">
         <div>
@@ -706,8 +709,10 @@ function onTypeChange(){
 }
 
 async function onTickerInput(){
-  const ticker=document.getElementById('a-ticker').value.trim().toUpperCase();
-  if(!ticker||ticker.length<2) return;
+  const inputEl=document.getElementById('a-ticker');
+  const ticker=inputEl.value.trim().toUpperCase();
+  inputEl.value=ticker;
+  if(!ticker||ticker.length<2){toast('請填寫股票代碼');return}
   document.getElementById('preview-price').textContent='最新報價：抓取中...';
   document.getElementById('price-preview').style.display='';
   try{
