@@ -539,8 +539,8 @@ async function loadData(silent=false){
     saveCache();
     renderAll();
     // 同步後維持原分頁
-    const tabEl=document.querySelector(`.tab[onclick*="'${activeTab}'"]`);
-    switchTab(activeTab,tabEl||undefined);
+    const _el=document.querySelector('[onclick*="switchTab(\'' + activeTab + '\'"]');
+    switchTab(activeTab,_el||undefined);
     const now=new Date().toLocaleTimeString('zh-TW',{hour:'2-digit',minute:'2-digit'});
     setStatus('上次同步：'+now);
     if(!silent) toast('已同步');
@@ -1111,7 +1111,7 @@ function openPlanModal(id=null){
 }
 function closePlanModal(e){if(!e||e.target===document.getElementById('plan-modal'))document.getElementById('plan-modal').classList.remove('open')}
 
-function savePlan(){
+async function savePlan(){
   const name=document.getElementById('plan-name').value.trim();
   const type=document.getElementById('plan-type').value;
   const target=parseFloat(document.getElementById('plan-target').value)||0;
@@ -1136,7 +1136,7 @@ function savePlan(){
   btn.textContent='新增計畫'; btn.disabled=false;
 }
 
-function removePlan(id){
+async function removePlan(id){
   if(!confirm('確定要刪除這個計畫？')) return;
   plans=plans.filter(x=>x.id!==id);
   renderPlans();
@@ -1260,6 +1260,12 @@ const validTabs=['overview','assets','cashflow','history','fx','plans'];
 if(initTab&&validTabs.includes(initTab)) activeTab=initTab;
 
 loadData();
+
+// Apply initial tab
+if(activeTab&&activeTab!=='overview'){
+  const _tabEl=document.querySelector('[onclick*="switchTab(\'' + activeTab + '\'"]');
+  switchTab(activeTab,_tabEl||undefined);
+}
 </script>
 </body>
 </html>
