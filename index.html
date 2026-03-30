@@ -295,7 +295,7 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
           <input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal">
         </div>
         <div>
-          <label class="form-label" id="shares-label">持有數量</label>
+          <label class="form-label" id="shares-label">持有股數</label>
           <input class="form-input" id="a-shares" type="number" placeholder="0" inputmode="decimal" oninput="onSharesInput()">
         </div>
       </div>
@@ -685,6 +685,7 @@ function changeMonth(dir){currentMonth.setMonth(currentMonth.getMonth()+dir);ren
 // === 資產 Modal ===
 const STOCK_TYPES=['stock','crypto'];
 let tickerPrice=null;
+let tickerPriceCurrency=null;
 
 function isStockMode(){return STOCK_TYPES.includes(document.getElementById('a-type').value)}
 
@@ -705,6 +706,7 @@ function onTypeChange(){
     document.getElementById('shares-label').textContent='持有股數';
   }
   tickerPrice=null;
+  tickerPriceCurrency=null;
   document.getElementById('price-preview').style.display='none';
 }
 
@@ -719,8 +721,8 @@ async function onTickerInput(){
     const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker]))});
     if(data.prices&&data.prices[ticker]){
       tickerPrice=data.prices[ticker].price;
-      const cur=data.prices[ticker].currency||'USD';
-      document.getElementById('preview-price').textContent=`最新報價：${cur} ${tickerPrice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}（15分鐘延遲）`;
+      tickerPriceCurrency=data.prices[ticker].currency||'USD';
+      document.getElementById('preview-price').textContent=`最新報價：${tickerPriceCurrency} ${tickerPrice.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}（15分鐘延遲）`;
       onSharesInput();
     } else {
       document.getElementById('preview-price').textContent='找不到此代碼，請確認格式';
@@ -735,17 +737,23 @@ async function onTickerInput(){
 function onSharesInput(){
   if(!tickerPrice) return;
   const shares=parseFloat(document.getElementById('a-shares').value)||0;
-  const val=shares*tickerPrice;
-  document.getElementById('preview-value').textContent=
-    document.getElementById('a-currency').value==='TWD'
-      ? fmt(val*RATES.USD.TWD)
-      : fmt(val,'USD');
-  document.getElementById('a-value').value=val;
+  const currency=document.getElementById('a-currency').value;
+  // tickerPrice 是原始幣別價格（台股=TWD，美股=USD）
+  // 若用戶選的幣別與報價幣別不同，做換算
+  const priceCurrency=tickerPriceCurrency||'USD';
+  let val=shares*tickerPrice;
+  // 如果報價幣別和選擇幣別不同，換算
+  if(priceCurrency!==currency){
+    val=val*RATES[priceCurrency][currency];
+  }
+  document.getElementById('preview-value').textContent=fmt(val,currency);
+  document.getElementById('a-value').value=Math.round(val*100)/100;
 }
 
 function openAssetModal(id=null){
   assetEditId=id;
   tickerPrice=null;
+  tickerPriceCurrency=null;
   document.getElementById('price-preview').style.display='none';
   if(id){
     const a=assets.find(x=>x.id===id);
@@ -800,8 +808,13 @@ async function saveAsset(){
     value=parseFloat(document.getElementById('a-value').value)||0;
     if(!ticker){toast('請填寫股票代碼');return}
     if(!shares||Number(shares)<=0){toast('請填寫持有數量');return}
-    if(!value&&tickerPrice){value=Number(shares)*tickerPrice;}
-    if(!value){toast('請先等報價載入，或手動在「目前現值」填入金額');return}
+    if(!value&&tickerPrice){
+      const pCur=tickerPriceCurrency||'USD';
+      value=Number(shares)*tickerPrice;
+      if(pCur!==currency) value=value*RATES[pCur][currency];
+      value=Math.round(value*100)/100;
+    }
+    if(!value){toast('請先按「查詢報價」取得最新價格');return}
   } else {
     cost=parseFloat(document.getElementById('a-cost-manual').value)||0;
     value=parseFloat(document.getElementById('a-value-manual').value)||0;
