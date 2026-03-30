@@ -291,13 +291,17 @@ select.form-input{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://
       </div>
       <div class="form-row form-section">
         <div>
-          <label class="form-label" id="cost-label">買入成本（每股）</label>
-          <input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal">
+          <label class="form-label" id="cost-label">買入成本（每股均價）</label>
+          <input class="form-input" id="a-cost" type="number" placeholder="0" inputmode="decimal" oninput="updateCostPreview()">
         </div>
         <div>
           <label class="form-label" id="shares-label">持有股數</label>
-          <input class="form-input" id="a-shares" type="number" placeholder="0" inputmode="decimal" oninput="onSharesInput()">
+          <input class="form-input" id="a-shares" type="number" placeholder="0" inputmode="decimal" oninput="onSharesInput();updateCostPreview()">
         </div>
+      </div>
+      <!-- 成本預覽 -->
+      <div id="cost-preview" style="font-size:11px;color:var(--text3);margin:-8px 0 12px;display:none">
+        總買入成本：<span id="cost-preview-val" style="color:var(--text);font-weight:500"></span>
       </div>
       <!-- 現值預覽 -->
       <div id="price-preview" style="display:none;background:var(--bg2);border-radius:var(--radius);padding:10px 14px;margin-bottom:14px">
@@ -697,7 +701,7 @@ function onTypeChange(){
   if(type==='crypto'){
     document.getElementById('ticker-label').textContent='加密貨幣代碼';
     document.getElementById('ticker-hint').textContent='輸入 BTC / ETH / SOL 等';
-    document.getElementById('cost-label').textContent='買入幣價（USD）';
+    document.getElementById('cost-label').textContent='買入均價（每幣，USD）';
     document.getElementById('shares-label').textContent='持有數量（幣）';
   } else {
     document.getElementById('ticker-label').textContent='股票代碼';
@@ -731,6 +735,20 @@ async function onTickerInput(){
   }catch(e){
     document.getElementById('preview-price').textContent='網路錯誤，無法取得報價';
     tickerPrice=null;
+  }
+}
+
+function updateCostPreview(){
+  const costPer=parseFloat(document.getElementById('a-cost').value)||0;
+  const shares=parseFloat(document.getElementById('a-shares').value)||0;
+  const currency=document.getElementById('a-currency').value;
+  const preview=document.getElementById('cost-preview');
+  if(costPer>0&&shares>0){
+    const total=costPer*shares;
+    document.getElementById('cost-preview-val').textContent=fmt(total,currency);
+    preview.style.display='';
+  } else {
+    preview.style.display='none';
   }
 }
 
@@ -782,6 +800,7 @@ function openAssetModal(id=null){
     document.getElementById('a-type').value='cash';
     document.getElementById('a-currency').value='TWD';
     document.getElementById('a-cost').value='';
+  document.getElementById('cost-preview').style.display='none';
     document.getElementById('a-shares').value='';
     document.getElementById('a-ticker').value='';
     document.getElementById('a-value').value='';
@@ -804,10 +823,12 @@ async function saveAsset(){
   if(isStockMode()){
     ticker=document.getElementById('a-ticker').value.trim().toUpperCase();
     shares=document.getElementById('a-shares').value.trim();
-    cost=parseFloat(document.getElementById('a-cost').value)||0;
+    const costPerShare=parseFloat(document.getElementById('a-cost').value)||0;
     value=parseFloat(document.getElementById('a-value').value)||0;
     if(!ticker){toast('請填寫股票代碼');return}
     if(!shares||Number(shares)<=0){toast('請填寫持有數量');return}
+    // 總買入成本 = 每股成本 × 股數（同幣別，不換算）
+    cost=Math.round(costPerShare*Number(shares)*100)/100;
     if(!value&&tickerPrice){
       const pCur=tickerPriceCurrency||'USD';
       value=Number(shares)*tickerPrice;
@@ -825,7 +846,7 @@ async function saveAsset(){
     history.unshift({date:today,desc:`更新：${name}`,amount:`${currency} ${value.toLocaleString()}`,type:'update'});
   } else {
     assets.push({id:nextId++,name,type,currency,cost,value,note,ticker,shares,date:today});
-    history.unshift({date:today,desc:`新增：${name}`,amount:`+ ${currency} ${cost.toLocaleString()}`,type:'add'});
+    history.unshift({date:today,desc:`新增：${name}（${shares}股）`,amount:`+ ${currency} ${cost.toLocaleString()}`,type:'add'});
   }
   document.getElementById('asset-modal').classList.remove('open');
   renderAll();
