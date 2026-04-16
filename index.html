@@ -560,10 +560,12 @@ async function apiSave(action,data){
 }
 
 async function fetchAndUpdatePrices(){
-  const tickers=assets.map(a=>a.ticker).filter(t=>t&&t.trim()!=='');
-  if(tickers.length===0) return;
+  const tickerAssets=assets.filter(a=>a.ticker&&a.ticker.trim()!=='');
+  if(tickerAssets.length===0) return;
+  const tickers=tickerAssets.map(a=>a.ticker);
+  const types=tickerAssets.map(a=>a.type);
   try{
-    const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify(tickers))});
+    const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify(tickers)),types:encodeURIComponent(JSON.stringify(types))});
     if(data.error||!data.prices) return;
     priceCache=data.prices;
     // 自動更新有 ticker 的資產現值（用張數 × 最新股價）
@@ -814,24 +816,16 @@ async function onTickerInput(){
   if(!ticker||ticker.length<2){toast('請填寫股票代碼');return}
   document.getElementById('preview-price').textContent='最新報價：抓取中...';
   document.getElementById('price-preview').style.display='';
-  const CRYPTO_LIST=['BTC','ETH','BNB','SOL','USDT','XRP','ADA','DOGE','DOT','MATIC','AVAX','LINK','UNI','LTC'];
-  const isCrypto=CRYPTO_LIST.includes(ticker);
+  const isCrypto=document.getElementById('a-type').value==='crypto';
   try{
     let price=null, priceCur=null, label='';
-    if(isCrypto){
-      // CoinGecko direct fetch via Apps Script
-      const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker]))});
-      if(data.prices&&data.prices[ticker]){
-        price=data.prices[ticker].price;
-        priceCur='USD';
+    const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker])),types:encodeURIComponent(JSON.stringify([isCrypto?'crypto':'stock']))});
+    if(data.prices&&data.prices[ticker]){
+      price=data.prices[ticker].price;
+      priceCur=data.prices[ticker].currency||'USD';
+      if(isCrypto){
         label=`最新報價：USD ${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4})}`;
-      }
-    } else {
-      // Stocks via Apps Script (GOOGLEFINANCE)
-      const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker]))});
-      if(data.prices&&data.prices[ticker]){
-        price=data.prices[ticker].price;
-        priceCur=data.prices[ticker].currency||'USD';
+      } else {
         label=`最新報價：${priceCur} ${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}（15分鐘延遲）`;
       }
     }
