@@ -559,32 +559,69 @@ async function apiSave(action,data){
   return r;
 }
 
+// 直接從瀏覽器 fetch Binance，不透過 Apps Script
+async function fetchCryptoPriceDirect(ticker){
+  const sym=ticker.toUpperCase();
+  const stablecoins=['USDT','USDC','BUSD','DAI','TUSD'];
+  if(stablecoins.includes(sym)) return {price:1,change:0,currency:'USD',name:sym};
+  try{
+    const resp=await fetch(`https://api.binance.com/api/v3/ticker/24hr?symbol=${sym}USDT`);
+    if(!resp.ok) throw new Error('not ok');
+    const d=await resp.json();
+    const price=parseFloat(d.lastPrice);
+    if(!price||price<=0) throw new Error('bad price');
+    return {price,change:parseFloat(d.priceChangePercent),currency:'USD',name:sym};
+  }catch(e){
+    // Binance 失敗時嘗試 CoinGecko（直接呼叫，有 CORS）
+    try{
+      const r2=await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${sym.toLowerCase()}&vs_currencies=usd&include_24hr_change=true`);
+      if(!r2.ok) return null;
+      const d2=await r2.json();
+      const key=Object.keys(d2)[0];
+      if(!key||!d2[key]?.usd) return null;
+      return {price:d2[key].usd,change:d2[key].usd_24h_change||0,currency:'USD',name:sym};
+    }catch(e2){return null;}
+  }
+}
+
 async function fetchAndUpdatePrices(){
   const tickerAssets=assets.filter(a=>a.ticker&&a.ticker.trim()!=='');
   if(tickerAssets.length===0) return;
-  const tickers=tickerAssets.map(a=>a.ticker);
-  const types=tickerAssets.map(a=>a.type);
-  try{
-    const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify(tickers)),types:encodeURIComponent(JSON.stringify(types))});
-    if(data.error||!data.prices) return;
-    priceCache=data.prices;
-    // 自動更新有 ticker 的資產現值（用張數 × 最新股價）
-    let updated=false;
-    assets.forEach(a=>{
-      if(!a.ticker||!priceCache[a.ticker]) return;
-      const p=priceCache[a.ticker];
-      // 只更新 value，保留 cost 不動
-      // 若有設定持有張數（shares），用 shares × price 計算；否則顯示單價供參考
-      if(a.shares&&Number(a.shares)>0){
-        const newVal=Number(a.shares)*p.price;
-        if(Math.abs(newVal-a.value)>0.01){ a.value=Math.round(newVal*100)/100; updated=true; }
-      }
-    });
-    if(updated){ saveCache(); await apiSave('saveAssets',assets); }
-    renderAssets();
-    renderOverview();
-    setStatus('報價已更新（15分鐘延遲）');
-  }catch(e){ console.log('price fetch failed',e); }
+  const cryptoAssets=tickerAssets.filter(a=>a.type==='crypto');
+  const stockAssets=tickerAssets.filter(a=>a.type!=='crypto');
+
+  // 加密貨幣：瀏覽器直接 fetch Binance（不走 Apps Script）
+  if(cryptoAssets.length>0){
+    await Promise.all(cryptoAssets.map(async a=>{
+      const p=await fetchCryptoPriceDirect(a.ticker);
+      if(p) priceCache[a.ticker.toUpperCase()]=p;
+    }));
+  }
+
+  // 股票：仍透過 Apps Script (GOOGLEFINANCE)
+  if(stockAssets.length>0){
+    try{
+      const tickers=stockAssets.map(a=>a.ticker);
+      const types=stockAssets.map(a=>a.type);
+      const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify(tickers)),types:encodeURIComponent(JSON.stringify(types))});
+      if(data.prices) Object.assign(priceCache,data.prices);
+    }catch(e){ console.log('stock price fetch failed',e); }
+  }
+
+  // 更新資產現值並同步
+  let updated=false;
+  assets.forEach(a=>{
+    if(!a.ticker||!priceCache[a.ticker.toUpperCase()]) return;
+    const p=priceCache[a.ticker.toUpperCase()];
+    if(a.shares&&Number(a.shares)>0){
+      const newVal=Number(a.shares)*p.price;
+      if(Math.abs(newVal-a.value)>0.01){ a.value=Math.round(newVal*100)/100; updated=true; }
+    }
+  });
+  if(updated){ saveCache(); await apiSave('saveAssets',assets); }
+  renderAssets();
+  renderOverview();
+  setStatus('報價已更新');
 }
 
 function renderAll(){renderOverview();renderAssets();renderCashflow();renderHistory();renderPlans();renderPlanSummary();}
@@ -819,13 +856,18 @@ async function onTickerInput(){
   const isCrypto=document.getElementById('a-type').value==='crypto';
   try{
     let price=null, priceCur=null, label='';
-    const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker])),types:encodeURIComponent(JSON.stringify([isCrypto?'crypto':'stock']))});
-    if(data.prices&&data.prices[ticker]){
-      price=data.prices[ticker].price;
-      priceCur=data.prices[ticker].currency||'USD';
-      if(isCrypto){
-        label=`最新報價：USD ${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4})}`;
-      } else {
+    if(isCrypto){
+      // 直接從瀏覽器 fetch，完全不走 Apps Script
+      const p=await fetchCryptoPriceDirect(ticker);
+      if(p){
+        price=p.price; priceCur='USD';
+        label=`最新報價：USD ${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:4})}（漲跌 ${p.change>=0?'+':''}${p.change.toFixed(2)}%）`;
+      }
+    } else {
+      const data=await jsonp({action:'getPrices',tickers:encodeURIComponent(JSON.stringify([ticker])),types:encodeURIComponent(JSON.stringify(['stock']))});
+      if(data.prices&&data.prices[ticker]){
+        price=data.prices[ticker].price;
+        priceCur=data.prices[ticker].currency||'USD';
         label=`最新報價：${priceCur} ${price.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}（15分鐘延遲）`;
       }
     }
